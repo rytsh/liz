@@ -7,14 +7,14 @@ import (
 	"github.com/hashicorp/consul/api"
 )
 
-type Consul struct {
+type API struct {
 	Client       *api.Client
 	KV           *api.KV
 	QueryOptions api.QueryOptions
 	WriteOptions api.WriteOptions
 }
 
-func (c *Consul) setConnect() error {
+func (c *API) setConnect() error {
 	if c.KV == nil && c.Client == nil {
 		if err := c.Connect(); err != nil {
 			return err
@@ -28,7 +28,7 @@ func (c *Consul) setConnect() error {
 	return nil
 }
 
-func (c *Consul) Connect() error {
+func (c *API) Connect() error {
 	// Get a new client
 	client, err := api.NewClient(api.DefaultConfig())
 	if err != nil {
@@ -41,7 +41,7 @@ func (c *Consul) Connect() error {
 	return nil
 }
 
-func (c *Consul) LoadRaw(ctx context.Context, key string) ([]byte, error) {
+func (c *API) LoadRaw(ctx context.Context, key string) ([]byte, error) {
 	if err := c.setConnect(); err != nil {
 		return nil, err
 	}
@@ -55,7 +55,7 @@ func (c *Consul) LoadRaw(ctx context.Context, key string) ([]byte, error) {
 	return pair.Value, nil
 }
 
-func (c *Consul) SetRaw(ctx context.Context, key string, value []byte) error {
+func (c *API) SetRaw(ctx context.Context, key string, value []byte) error {
 	if err := c.setConnect(); err != nil {
 		return err
 	}
@@ -71,7 +71,7 @@ func (c *Consul) SetRaw(ctx context.Context, key string, value []byte) error {
 	return nil
 }
 
-func (c *Consul) Delete(ctx context.Context, key string) error {
+func (c *API) Delete(ctx context.Context, key string) error {
 	if err := c.setConnect(); err != nil {
 		return err
 	}

@@ -35,7 +35,7 @@ func TestConsul_LoadRaw(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			c := &Consul{
+			c := &API{
 				Client: tt.fields.Client,
 			}
 
