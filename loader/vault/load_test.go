@@ -49,8 +49,9 @@ func TestAPI_LoadMap(t *testing.T) {
 				t.Errorf("API.LoadMap() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if deep.Equal(got, tt.want) != nil {
-				t.Errorf("API.LoadMap() = %v, want %v", got, tt.want)
+
+			if diff := deep.Equal(got, tt.want); diff != nil {
+				t.Errorf("API.LoadMap() = %v", diff)
 			}
 		})
 	}

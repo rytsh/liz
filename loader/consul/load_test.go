@@ -42,22 +42,22 @@ func TestConsul_LoadRaw(t *testing.T) {
 			ctx := context.Background()
 
 			if err := c.SetRaw(ctx, tt.args.key, tt.args.value); (err != nil) != tt.wantErr {
-				t.Errorf("Consul.SetRaw() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("API.SetRaw() error = %v, wantErr %v", err, tt.wantErr)
 			}
 
 			got, err := c.LoadRaw(ctx, tt.args.key)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("Consul.LoadRaw() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("API.LoadRaw() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 
-			if deep.Equal(got, tt.want) != nil {
-				t.Errorf("Consul.LoadRaw() = %v, want %v", got, tt.want)
+			if diff := deep.Equal(got, tt.want); diff != nil {
+				t.Errorf("API.LoadRaw() = %v", diff)
 			}
 
 			// cleanup
 			if err := c.Delete(ctx, tt.args.key); (err != nil) != tt.wantErr {
-				t.Errorf("Consul.Delete() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("API.Delete() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}

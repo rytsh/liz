@@ -1,6 +1,6 @@
 module github.com/rytsh/liz/loader/consul
 
-go 1.19
+go 1.18
 
 require (
 	github.com/go-test/deep v1.0.8
