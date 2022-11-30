@@ -2,6 +2,10 @@
 
 Consul loader, read/write/delete key-value pairs from consul.
 
+```sh
+go get github.com/rytsh/liz/loader/consul
+```
+
 ## Usage
 
 | Environment variable    | Description          |

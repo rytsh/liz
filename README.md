@@ -1,10 +1,14 @@
 ![Liz](./_assets/liz.svg)
 
-Liz is a configuration reader/writer for Go. It's designed to be simple and easy to use.
+Liz is a bunch of tools to reade/write/check configuration for Go.  
+It's designed to be simple and easy to use.
 
-__WORK IN PROGRESS__
+## Avaliable Tools
 
-## Avaliable Config Types
-
-| Type | Description |
-| ---- | ----------- |
+| Type                                       | Description                        |
+| ------------------------------------------ | ---------------------------------- |
+| [Consul loader](./loader/consul/README.md) | github.com/rytsh/liz/loader/consul |
+| [Vault loader](./loader/vault/README.md)   | github.com/rytsh/liz/loader/vault  |
+| [File loader](./loader/file/README.md)     | github.com/rytsh/liz/loader/file   |
+| [MapX](./utils/mapx/README.md)             | github.com/rytsh/liz/utils/mapx    |
+| [Ptr](./utils/ptr/README.md)               | github.com/rytsh/liz/utils/ptr     |
