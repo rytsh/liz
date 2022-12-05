@@ -6,6 +6,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 var (
@@ -27,9 +28,12 @@ func New() *API {
 
 	return &API{
 		Codec: map[string]Codec{
+			"JSON":  json,
 			".json": json,
+			"YAML":  yaml,
 			".yaml": yaml,
 			".yml":  yaml,
+			"TOML":  toml,
 			".toml": toml,
 		},
 	}
@@ -108,6 +112,21 @@ func (a *API) LoadMap(path string) (map[string]interface{}, error) {
 	if codec == nil {
 		return nil, fmt.Errorf("failed to find codec for extension %s", ext)
 	}
+
+	if err := codec.Decode(f, &m); err != nil {
+		return nil, fmt.Errorf("failed to unmarshal: %w", err)
+	}
+
+	return m, nil
+}
+
+func (a *API) ContentMap(v string, codec Codec) (map[string]interface{}, error) {
+	if codec == nil {
+		return nil, fmt.Errorf("failed codec is nil")
+	}
+
+	f := strings.NewReader(v)
+	var m map[string]interface{}
 
 	if err := codec.Decode(f, &m); err != nil {
 		return nil, fmt.Errorf("failed to unmarshal: %w", err)
