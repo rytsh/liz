@@ -3,8 +3,11 @@ package consul
 import (
 	"context"
 	"fmt"
+	"sync"
 
 	"github.com/hashicorp/consul/api"
+	"github.com/hashicorp/consul/api/watch"
+	"github.com/hashicorp/go-hclog"
 )
 
 type API struct {
@@ -83,4 +86,59 @@ func (c *API) Delete(ctx context.Context, key string) error {
 	}
 
 	return nil
+}
+
+// DynamicValue return a channel for getting latest value of key.
+// This function will start a goroutine for watching key.
+// The caller should call stop function when it is no longer needed.
+func (c *API) DynamicValue(ctx context.Context, wg *sync.WaitGroup, key string) (<-chan []byte, func(), error) {
+	if err := c.setConnect(); err != nil {
+		return nil, nil, err
+	}
+
+	plan, err := watch.Parse(map[string]interface{}{
+		"type": "key",
+		"key":  key,
+	})
+	if err != nil {
+		return nil, nil, fmt.Errorf("wath.Parse %w", err)
+	}
+
+	// not add any buffer, this is useful for getting latest change only
+	vChannel := make(chan []byte)
+
+	plan.HybridHandler = func(_ watch.BlockingParamVal, raw interface{}) {
+		if raw == nil {
+			return
+		}
+
+		v, ok := raw.(*api.KVPair)
+		if ok {
+			vChannel <- v.Value
+			return
+		}
+	}
+
+	runCh := make(chan error, 1)
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		// this select-case for listen ctx done and plan run result same time
+		select {
+		case <-ctx.Done():
+			plan.Stop()
+		case <-runCh:
+		}
+
+		close(vChannel)
+	}()
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		runCh <- plan.RunWithClientAndHclog(c.Client, hclog.NewNullLogger())
+	}()
+
+	return vChannel, plan.Stop, nil
 }

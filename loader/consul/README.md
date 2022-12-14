@@ -1,6 +1,6 @@
 # Consul
 
-Consul loader, read/write/delete key-value pairs from consul.
+Consul loader have dynamic read and read/write/delete key-value pairs from consul.
 
 ```sh
 go get github.com/rytsh/liz/loader/consul
