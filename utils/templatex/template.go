@@ -76,6 +76,15 @@ func (t *Template) ParseGlob(pattern string) (*Template, error) {
 	return t, nil
 }
 
+func (t *Template) cloneTemplate() (*textTemplate.Template, error) {
+	tpl, err := t.template.Clone()
+	if err != nil {
+		return nil, fmt.Errorf("Clone error: %w", err)
+	}
+
+	return tpl, nil
+}
+
 func (t *Template) ExecuteBytes(v any, content string) ([]byte, error) {
 	output, err := t.execute(v, content)
 	if err != nil {
@@ -96,8 +105,13 @@ func (t *Template) Execute(v any, content string) (string, error) {
 
 func (t *Template) execute(v any, content string) (*bytes.Buffer, error) {
 	var b bytes.Buffer
+
+	tpl, err := t.template.Clone()
+	if err != nil {
+		return nil, fmt.Errorf("execute clone error: %w", err)
+	}
 	// Execute the template and write the output to the buffer
-	if err := textTemplate.Must(t.template.Parse(content)).Execute(&b, v); err != nil {
+	if err := textTemplate.Must(tpl.Parse(content)).Execute(&b, v); err != nil {
 		return nil, fmt.Errorf("Execute error: %w", err)
 	}
 
