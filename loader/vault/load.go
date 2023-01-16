@@ -9,7 +9,8 @@ import (
 )
 
 type API struct {
-	Client *api.Client
+	Client          *api.Client
+	AppRoleBasePath string
 }
 
 func (c *API) setConnect() error {
@@ -35,10 +36,20 @@ func (c *API) Login(ctx context.Context) error {
 	// First, let's get the role ID given to us by our Vault administrator.
 	roleID := os.Getenv("VAULT_ROLE_ID")
 	if roleID == "" {
-		return fmt.Errorf("no role ID was provided in APPROLE_ROLE_ID env var")
+		return fmt.Errorf("no role ID was provided in VAULT_ROLE_ID env var")
 	}
 
-	secret, err := c.Client.Logical().WriteWithContext(ctx, "auth/approle/login", map[string]interface{}{
+	// check default path
+	appRoleBasePath := c.AppRoleBasePath
+	if appRoleBasePath == "" {
+		appRoleBasePath = os.Getenv("VAULT_APPROLE_BASE_PATH")
+	}
+
+	if appRoleBasePath == "" {
+		appRoleBasePath = "auth/approle/login"
+	}
+
+	secret, err := c.Client.Logical().WriteWithContext(ctx, appRoleBasePath, map[string]interface{}{
 		"role_id":   roleID,
 		"secret_id": os.Getenv("VAULT_ROLE_SECRET"),
 	})

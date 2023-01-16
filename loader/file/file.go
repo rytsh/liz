@@ -1,17 +1,17 @@
 package file
 
 import (
+	"bytes"
 	"fmt"
 	"io"
 	"io/fs"
 	"os"
 	"path/filepath"
-	"strings"
 )
 
 var (
 	defaultFileFlag int         = os.O_WRONLY | os.O_CREATE | os.O_TRUNC
-	defaultFilePerm fs.FileMode = 0644
+	defaultFilePerm fs.FileMode = 0o644
 )
 
 type API struct {
@@ -96,46 +96,44 @@ func (a *API) LoadRaw(path string) ([]byte, error) {
 	return b, nil
 }
 
-func (a *API) LoadMap(path string) (map[string]interface{}, error) {
+func (a *API) Load(path string, dst interface{}) error {
 	// open file
 	f, err := a.openFileRead(path)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	defer f.Close()
 
-	var m map[string]interface{}
 	// check the path extension
 	ext := filepath.Ext(path)
 	codec := a.Codec[ext]
 	if codec == nil {
-		return nil, fmt.Errorf("failed to find codec for extension %s", ext)
+		return fmt.Errorf("failed to find codec for extension %s", ext)
 	}
 
-	if err := codec.Decode(f, &m); err != nil {
-		return nil, fmt.Errorf("failed to unmarshal: %w", err)
+	if err := codec.Decode(f, dst); err != nil {
+		return fmt.Errorf("failed to unmarshal: %w", err)
 	}
 
-	return m, nil
+	return nil
 }
 
-func (a *API) ContentMap(v string, codec Codec) (map[string]interface{}, error) {
+func (a *API) LoadContent(v []byte, dst interface{}, codec Codec) error {
 	if codec == nil {
-		return nil, fmt.Errorf("failed codec is nil")
+		return fmt.Errorf("failed codec is nil")
 	}
 
-	f := strings.NewReader(v)
-	var m map[string]interface{}
+	f := bytes.NewReader(v)
 
-	if err := codec.Decode(f, &m); err != nil {
-		return nil, fmt.Errorf("failed to unmarshal: %w", err)
+	if err := codec.Decode(f, dst); err != nil {
+		return fmt.Errorf("failed to unmarshal: %w", err)
 	}
 
-	return m, nil
+	return nil
 }
 
-func (a *API) SetMap(path string, data any) error {
+func (a *API) SetWithCodec(path string, data any) error {
 	// open file
 	f, err := a.openFileWrite(path)
 	if err != nil {
@@ -156,7 +154,7 @@ func (a *API) SetMap(path string, data any) error {
 	return nil
 }
 
-func (a *API) Set(path string, data []byte) error {
+func (a *API) SetRaw(path string, data []byte) error {
 	// open file
 	f, err := a.openFileWrite(path)
 	if err != nil {

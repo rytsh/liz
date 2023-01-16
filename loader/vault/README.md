@@ -29,7 +29,7 @@ go get github.com/rytsh/liz/loader/vault
 | VAULT_HTTP_PROXY        | HTTP proxy           |
 | VAULT_PROXY_ADDR        | Proxy address        |
 | VAULT_DISABLE_REDIRECTS | Disable redirects    |
-
+| VAULT_APPROLE_BASE_PATH | /auth/approle/login/ |
 
 ## Test
 

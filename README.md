@@ -1,6 +1,6 @@
 ![Liz](./_assets/liz.svg)
 
-Liz is a bunch of tools to reade/write/check configuration for Go.  
+Liz is a bunch of tools to read/write/check configuration for Go.  
 It's designed to be simple and easy to use.
 
 ## Avaliable Tools

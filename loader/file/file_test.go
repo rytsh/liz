@@ -50,7 +50,7 @@ Laborum ex eiusmod velit fugiat eu elit ea sunt Lorem est.
 	}
 }
 
-func TestAPI_LoadMap(t *testing.T) {
+func TestAPI_Load(t *testing.T) {
 	a := New()
 
 	type args struct {
@@ -101,13 +101,14 @@ func TestAPI_LoadMap(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := a.LoadMap(tt.args.path)
+			var v interface{}
+			err := a.Load(tt.args.path, &v)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("API.LoadMap() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("API.LoadMap() = %v, want %v", got, tt.want)
+			if !reflect.DeepEqual(v, tt.want) {
+				t.Errorf("API.LoadMap() = %v, want %v", v, tt.want)
 			}
 		})
 	}
@@ -185,8 +186,8 @@ foo: bar
 		t.Run(tt.name, func(t *testing.T) {
 			filePath := path.Join(tempdir, tt.args.path)
 
-			if err := a.SetMap(filePath, tt.args.data); (err != nil) != tt.wantErr {
-				t.Errorf("API.SetMap() error = %v, wantErr %v", err, tt.wantErr)
+			if err := a.SetWithCodec(filePath, tt.args.data); (err != nil) != tt.wantErr {
+				t.Errorf("API.SetWithCodec() error = %v, wantErr %v", err, tt.wantErr)
 
 				return
 			}
@@ -232,8 +233,8 @@ func TestAPI_Set(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			filePath := path.Join(tempdir, tt.args.path)
 
-			if err := a.Set(filePath, tt.args.data); (err != nil) != tt.wantErr {
-				t.Errorf("API.Set() error = %v, wantErr %v", err, tt.wantErr)
+			if err := a.SetRaw(filePath, tt.args.data); (err != nil) != tt.wantErr {
+				t.Errorf("API.SetRaw() error = %v, wantErr %v", err, tt.wantErr)
 			}
 
 			got, err := a.LoadRaw(filePath)
