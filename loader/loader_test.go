@@ -94,7 +94,7 @@ func TestConfigs_Load(t *testing.T) {
 				t.Skip()
 			}
 
-			if err := tt.c.Load(context.Background(), nil, nil); (err != nil) != tt.wantErr {
+			if err := tt.c.Load(context.Background(), nil, nil, nil); (err != nil) != tt.wantErr {
 				t.Errorf("Configs.Load() error = %v, wantErr %v", err, tt.wantErr)
 			}
 

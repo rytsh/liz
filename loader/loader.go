@@ -12,7 +12,9 @@ import (
 
 // Load loads all configs to export location.
 // If loads with dynamic config, cancel context to stop loading.
-func (c Configs) Load(ctx context.Context, wg *sync.WaitGroup, cache *Cache) error {
+// Export is used to export data if ExportToValue enabled.
+// Currently just static config supported to export data.
+func (c Configs) Load(ctx context.Context, wg *sync.WaitGroup, cache *Cache, export *Data) error {
 	if cache == nil {
 		cache = &Cache{}
 	}
@@ -20,7 +22,7 @@ func (c Configs) Load(ctx context.Context, wg *sync.WaitGroup, cache *Cache) err
 	cache.set()
 
 	for _, config := range c {
-		if err := config.load(ctx, wg, cache); err != nil {
+		if err := config.load(ctx, wg, cache, export); err != nil {
 			return err
 		}
 	}
@@ -28,7 +30,7 @@ func (c Configs) Load(ctx context.Context, wg *sync.WaitGroup, cache *Cache) err
 	return nil
 }
 
-func (c Config) load(ctx context.Context, wg *sync.WaitGroup, cache *Cache) error {
+func (c Config) load(ctx context.Context, wg *sync.WaitGroup, cache *Cache, export *Data) error {
 	to := Data{}
 
 	for _, static := range c.Statics {
@@ -39,8 +41,14 @@ func (c Config) load(ctx context.Context, wg *sync.WaitGroup, cache *Cache) erro
 
 	if len(c.Dynamics) > 0 {
 		for _, dynamic := range c.Dynamics {
-			if err := dynamic.load(ctx, wg, &to, cache, c.Export); err != nil {
+			waitCtx, err := dynamic.load(ctx, wg, &to, cache, c.Export)
+			if err != nil {
 				return err
+			}
+
+			// wait to first load
+			if waitCtx != nil {
+				<-waitCtx.Done()
 			}
 		}
 	} else {
@@ -55,6 +63,10 @@ func (c Config) load(ctx context.Context, wg *sync.WaitGroup, cache *Cache) erro
 				}
 			}
 		}
+	}
+
+	if c.ExportToValue && export != nil {
+		*export = to
 	}
 
 	return nil
@@ -188,10 +200,12 @@ func (c ConfigStatic) load(ctx context.Context, to *Data, cache *Cache) error {
 	return nil
 }
 
-func (c ConfigDynamic) load(ctx context.Context, wg *sync.WaitGroup, to *Data, cache *Cache, filePath string) error {
+func (c ConfigDynamic) load(ctx context.Context, wg *sync.WaitGroup, to *Data, cache *Cache, filePath string) (context.Context, error) {
 	if wg == nil {
 		wg = &sync.WaitGroup{}
 	}
+
+	var waitContext context.Context
 
 	if c.Consul != nil {
 		var codec file.Codec
@@ -203,7 +217,7 @@ func (c ConfigDynamic) load(ctx context.Context, wg *sync.WaitGroup, to *Data, c
 
 			codec = cache.File.Codec[codecTxt]
 			if codec == nil {
-				return fmt.Errorf("codec %s not found", codecTxt)
+				return nil, fmt.Errorf("codec %s not found", codecTxt)
 			}
 		}
 
@@ -211,8 +225,11 @@ func (c ConfigDynamic) load(ctx context.Context, wg *sync.WaitGroup, to *Data, c
 
 		ch, cancel, err := cache.Consul.DynamicValue(ctx, wg, contentPath)
 		if err != nil {
-			return err
+			return nil, err
 		}
+
+		var waitCancel context.CancelFunc
+		waitContext, waitCancel = context.WithCancel(ctx)
 
 		recordToMap := copyMap(to.Map)
 
@@ -221,7 +238,16 @@ func (c ConfigDynamic) load(ctx context.Context, wg *sync.WaitGroup, to *Data, c
 			defer wg.Done()
 			defer cancel()
 
+			i := 0
+
 			for {
+				if i == 0 {
+					i++
+				} else if i == 1 {
+					waitCancel()
+					i++
+				}
+
 				select {
 				case <-ctx.Done():
 					return
@@ -233,6 +259,7 @@ func (c ConfigDynamic) load(ctx context.Context, wg *sync.WaitGroup, to *Data, c
 						var vMap map[string]interface{}
 
 						if err := cache.File.LoadContent(data, &vMap, codec); err != nil {
+							logFromCtx(ctx).Warn("failed to load consul data", "err", err.Error())
 							continue
 						}
 
@@ -241,16 +268,19 @@ func (c ConfigDynamic) load(ctx context.Context, wg *sync.WaitGroup, to *Data, c
 						to.Merge(vMap)
 					}
 
-					// TODO: log error
 					if to.Raw != nil {
-						cache.File.SetRaw(filePath, to.Raw)
+						if err := cache.File.SetRaw(filePath, to.Raw); err != nil {
+							logFromCtx(ctx).Warn("failed to save dynamic consul data to file", "filePath", filePath, "err", err.Error())
+						}
 					} else {
-						cache.File.SetWithCodec(filePath, to.Map)
+						if err := cache.File.SetWithCodec(filePath, to.Map); err != nil {
+							logFromCtx(ctx).Warn("failed to save dynamic consul data to file", "filePath", filePath, "err", err.Error())
+						}
 					}
 				}
 			}
 		}()
 	}
 
-	return nil
+	return waitContext, nil
 }

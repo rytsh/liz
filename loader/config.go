@@ -3,9 +3,10 @@ package loader
 type Configs []Config
 
 type Config struct {
-	Export   string
-	Statics  []ConfigStatic
-	Dynamics []ConfigDynamic
+	Export        string
+	ExportToValue bool
+	Statics       []ConfigStatic
+	Dynamics      []ConfigDynamic
 }
 
 type ConfigStatic struct {
