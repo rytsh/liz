@@ -13,11 +13,11 @@ replace github.com/rytsh/liz/utils/mapx => ../utils/mapx
 replace github.com/rytsh/liz/utils/templatex => ../utils/templatex
 
 require (
-	github.com/rytsh/liz/loader/consul v0.0.0-00010101000000-000000000000
-	github.com/rytsh/liz/loader/file v0.0.0-00010101000000-000000000000
-	github.com/rytsh/liz/loader/vault v0.0.0-00010101000000-000000000000
-	github.com/rytsh/liz/utils/mapx v0.0.0-00010101000000-000000000000
-	github.com/rytsh/liz/utils/templatex v0.0.0-00010101000000-000000000000
+	github.com/rytsh/liz/loader/consul v0.2.0
+	github.com/rytsh/liz/loader/file v0.2.0
+	github.com/rytsh/liz/loader/vault v0.2.0
+	github.com/rytsh/liz/utils/mapx v0.1.1
+	github.com/rytsh/liz/utils/templatex v0.1.2
 )
 
 require (
