@@ -38,7 +38,12 @@ func (h *Holder) InitializeFuncs(opts ...Option) *Holder {
 			humanize.FuncMap(),
 			custom.FuncMap(),
 			// Add additonal functions here
+			option.addFuncs,
 		)
+
+		for _, f := range option.disableFuncs {
+			delete(h.funcMap, f)
+		}
 	})
 
 	return h
@@ -70,7 +75,9 @@ func (h *Holder) AddFuncs(funcs ...map[string]interface{}) {
 }
 
 type options struct {
-	workDir string
+	workDir      string
+	disableFuncs []string
+	addFuncs     map[string]interface{}
 }
 
 type Option func(*options)
@@ -78,5 +85,33 @@ type Option func(*options)
 func WorkDir(workDir string) Option {
 	return func(o *options) {
 		o.workDir = workDir
+	}
+}
+
+func DisableFuncs(funcs ...string) Option {
+	return func(o *options) {
+		o.disableFuncs = append(o.disableFuncs, funcs...)
+	}
+}
+
+func AddFuncs(funcs map[string]interface{}) Option {
+	return func(o *options) {
+		if o.addFuncs == nil {
+			o.addFuncs = make(map[string]interface{}, len(funcs))
+		}
+
+		for k, v := range funcs {
+			o.addFuncs[k] = v
+		}
+	}
+}
+
+func AddFunc(key string, f interface{}) Option {
+	return func(o *options) {
+		if o.addFuncs == nil {
+			o.addFuncs = make(map[string]interface{}, 1)
+		}
+
+		o.addFuncs[key] = f
 	}
 }

@@ -56,6 +56,18 @@ func TestTemplate_Execute(t *testing.T) {
 			want:    "custom.go",
 			wantErr: false,
 		},
+		{
+			name: "custom func",
+			args: args{
+				v:       map[string]interface{}{"name": "x"},
+				content: `{{ custom .name }}`,
+			},
+			opts: []functions.Option{functions.AddFunc("custom", func(x string) string {
+				return x + "custom"
+			})},
+			want:    "xcustom",
+			wantErr: false,
+		},
 	}
 
 	for _, tt := range tests {

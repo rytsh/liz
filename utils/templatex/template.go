@@ -76,15 +76,6 @@ func (t *Template) ParseGlob(pattern string) (*Template, error) {
 	return t, nil
 }
 
-func (t *Template) cloneTemplate() (*textTemplate.Template, error) {
-	tpl, err := t.template.Clone()
-	if err != nil {
-		return nil, fmt.Errorf("Clone error: %w", err)
-	}
-
-	return tpl, nil
-}
-
 func (t *Template) ExecuteBytes(v any, content string) ([]byte, error) {
 	output, err := t.execute(v, content)
 	if err != nil {
