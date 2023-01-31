@@ -3,10 +3,11 @@ package loader
 type Configs []Config
 
 type Config struct {
-	Export        string
-	ExportToValue bool
-	Statics       []ConfigStatic
-	Dynamics      []ConfigDynamic
+	// Name for export value, default is empty.
+	Name     string
+	Export   string
+	Statics  []ConfigStatic
+	Dynamics []ConfigDynamic
 }
 
 type ConfigStatic struct {
@@ -21,44 +22,62 @@ type ConfigDynamic struct {
 }
 
 type ConfigConsul struct {
-	// Path is the location in consul KV
+	// Name for export, default is empty.
+	Name string
+	// Path is the location in consul KV.
 	Path string
-	// PathPrefix default is empty
+	// PathPrefix default is empty.
 	PathPrefix string
-	// Raw to load as raw, don't mix with other loaders
+	// Raw to load as raw, don't mix with other loaders.
 	Raw bool
-	// Codec YAML,JSON,TOML default is YAML
+	// Codec YAML,JSON,TOML default is YAML.
 	Codec string
+	// InnerPath is get the inner path from vault response, / separated as db/settings.
+	// Cannot work with Raw.
+	InnerPath string
+	// Map is the wrapper map, / separated as db/settings.
+	Map string
 }
 
 type ConfigVault struct {
+	// Name for export, default is empty.
+	Name string
 	Path string
 	// PathPrefix default is empty, path_prefix is must!
 	PathPrefix string
-	// AppRoleBasePath default is auth/approle/login, not need to set
+	// AppRoleBasePath default is auth/approle/login, not need to set.
 	AppRoleBasePath string
-	// AdditionalPaths additional paths to get from extra content, default is none
-	AdditionalPaths []ConfigVaultAdditional
-}
-
-type ConfigVaultAdditional struct {
-	// Map is the where to add as trace/config -> ["trace"]["config"]
+	// InnerPath is get the inner path from vault response, / separated as db/settings.
+	InnerPath string
+	// Map is the wrapper map, / separated as db/settings.
 	Map string
-	// Path show location in vault config
-	Path string
 }
 
 type ConfigFile struct {
-	// Path is the file location, [toml, yml, yaml, json] supported
+	// Name for export, default is empty.
+	Name string
+	// Path is the file location, [toml, yml, yaml, json] supported.
 	Path string
-	// Raw to load as raw, don't mix with other loaders
+	// Raw to load as raw, don't mix with other loaders.
 	Raw bool
+	// InnerPath is get the inner path from vault response, / separated as db/settings.
+	// Cannot work with Raw.
+	InnerPath string
+	// Map is the wrapper map, / separated as db/settings.
+	Map string
 }
 
 type ConfigContent struct {
-	// Codec YAML,JSON,TOML default is YAML
+	// Name for export, default is empty.
+	Name string
+	// Codec YAML,JSON,TOML default is YAML.
 	Codec    string
 	Content  string
 	Raw      bool
 	Template bool
+	// InnerPath is get the inner path from vault response, / separated as db/settings.
+	// Cannot work with Raw.
+	InnerPath string
+	// Map is the wrapper map, / separated as db/settings.
+	Map string
 }

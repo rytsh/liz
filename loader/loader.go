@@ -10,11 +10,11 @@ import (
 	"github.com/rytsh/liz/loader/file"
 )
 
+type Call func(context.Context, string, map[string]interface{})
+
 // Load loads all configs to export location.
 // If loads with dynamic config, cancel context to stop loading.
-// Export is used to export data if ExportToValue enabled.
-// Currently just static config supported to export data.
-func (c Configs) Load(ctx context.Context, wg *sync.WaitGroup, cache *Cache, export *Data) error {
+func (c Configs) Load(ctx context.Context, wg *sync.WaitGroup, cache *Cache, call Call) error {
 	if cache == nil {
 		cache = &Cache{}
 	}
@@ -22,7 +22,7 @@ func (c Configs) Load(ctx context.Context, wg *sync.WaitGroup, cache *Cache, exp
 	cache.set()
 
 	for _, config := range c {
-		if err := config.load(ctx, wg, cache, export); err != nil {
+		if err := config.load(ctx, wg, cache, call); err != nil {
 			return err
 		}
 	}
@@ -30,7 +30,7 @@ func (c Configs) Load(ctx context.Context, wg *sync.WaitGroup, cache *Cache, exp
 	return nil
 }
 
-func (c Config) load(ctx context.Context, wg *sync.WaitGroup, cache *Cache, export *Data) error {
+func (c Config) load(ctx context.Context, wg *sync.WaitGroup, cache *Cache, call Call) error {
 	to := Data{}
 
 	for _, static := range c.Statics {
@@ -41,7 +41,7 @@ func (c Config) load(ctx context.Context, wg *sync.WaitGroup, cache *Cache, expo
 
 	if len(c.Dynamics) > 0 {
 		for _, dynamic := range c.Dynamics {
-			waitCtx, err := dynamic.load(ctx, wg, &to, cache, c.Export)
+			waitCtx, err := dynamic.load(ctx, wg, &to, cache, c.Export, c.Name, call)
 			if err != nil {
 				return err
 			}
@@ -52,21 +52,27 @@ func (c Config) load(ctx context.Context, wg *sync.WaitGroup, cache *Cache, expo
 			}
 		}
 	} else {
+		if to.Raw != nil {
+			to.AddHold(c.Name, to.Raw)
+		} else {
+			to.AddHold(c.Name, to.Map)
+		}
+
 		if c.Export != "" {
 			if to.Raw != nil {
 				if err := cache.File.SetRaw(c.Export, to.Raw); err != nil {
 					return err
 				}
 			} else {
-				if err := cache.File.SetWithCodec(c.Export, to); err != nil {
+				if err := cache.File.SetWithCodec(c.Export, to.Map); err != nil {
 					return err
 				}
 			}
 		}
-	}
 
-	if c.ExportToValue && export != nil {
-		*export = to
+		if call != nil {
+			call(ctx, c.Name, to.Hold)
+		}
 	}
 
 	return nil
@@ -81,8 +87,17 @@ func (c ConfigStatic) load(ctx context.Context, to *Data, cache *Cache) error {
 			return err
 		}
 
+		var dataProcessed interface{}
+
 		if c.Consul.Raw {
-			to.Raw = data
+			if c.Consul.Map != "" {
+				vMap := MapPath(c.Consul.Map, data).(map[string]interface{})
+				to.Merge(vMap)
+				dataProcessed = vMap
+			} else {
+				to.Raw = data
+				dataProcessed = data
+			}
 		} else {
 			// convert to map
 			var vMap map[string]interface{}
@@ -100,39 +115,20 @@ func (c ConfigStatic) load(ctx context.Context, to *Data, cache *Cache) error {
 				return err
 			}
 
+			vMap, ok := MapPath(c.Consul.Map, InnerPath(c.Consul.InnerPath, vMap)).(map[string]interface{})
+			if !ok {
+				return fmt.Errorf("consul mapping error")
+			}
+
 			to.Merge(vMap)
+			dataProcessed = vMap
 		}
+
+		to.AddHold(c.Consul.Name, dataProcessed)
 	}
 
 	if c.Vault != nil {
 		cache.Vault.AppRoleBasePath = c.Vault.AppRoleBasePath
-		// load additional secrets
-		for _, additional := range c.Vault.AdditionalPaths {
-			v, err := cache.Vault.LoadMap(ctx, c.Vault.PathPrefix, additional.Path)
-			if err != nil {
-				return err
-			}
-
-			if additional.Map != "" {
-				maps := strings.Split(additional.Map, "/")
-
-				mapDef := map[string]interface{}{}
-				mapRange := mapDef
-				for _, m := range maps {
-					if m == maps[len(maps)-1] {
-						mapRange[m] = v
-						break
-					}
-
-					mapRange[m] = map[string]interface{}{}
-					mapRange = mapRange[m].(map[string]interface{})
-				}
-
-				v = mapDef
-			}
-
-			to.Merge(v)
-		}
 
 		// load main secret
 		v, err := cache.Vault.LoadMap(ctx, c.Vault.PathPrefix, c.Vault.Path)
@@ -140,7 +136,13 @@ func (c ConfigStatic) load(ctx context.Context, to *Data, cache *Cache) error {
 			return err
 		}
 
+		v, ok := MapPath(c.Vault.Map, InnerPath(c.Vault.InnerPath, v)).(map[string]interface{})
+		if !ok {
+			return fmt.Errorf("vault mapping error")
+		}
+
 		to.Merge(v)
+		to.AddHold(c.Vault.Name, v)
 	}
 
 	if c.File != nil {
@@ -149,8 +151,17 @@ func (c ConfigStatic) load(ctx context.Context, to *Data, cache *Cache) error {
 			return err
 		}
 
+		var dataProcessed interface{}
+
 		if c.File.Raw {
-			to.Raw = data
+			if c.File.Map != "" {
+				vMap := MapPath(c.File.Map, data).(map[string]interface{})
+				to.Merge(vMap)
+				dataProcessed = vMap
+			} else {
+				to.Raw = data
+				dataProcessed = data
+			}
 		} else {
 			// convert to map
 			var vMap map[string]interface{}
@@ -159,8 +170,16 @@ func (c ConfigStatic) load(ctx context.Context, to *Data, cache *Cache) error {
 				return err
 			}
 
+			vMap, ok := MapPath(c.File.Map, InnerPath(c.File.InnerPath, vMap)).(map[string]interface{})
+			if !ok {
+				return fmt.Errorf("file mapping error")
+			}
+
 			to.Merge(vMap)
+			dataProcessed = vMap
 		}
+
+		to.AddHold(c.File.Name, dataProcessed)
 	}
 
 	if c.Content != nil {
@@ -173,8 +192,18 @@ func (c ConfigStatic) load(ctx context.Context, to *Data, cache *Cache) error {
 
 			content = v
 		}
+
+		var dataProcessed interface{}
+
 		if c.Content.Raw {
-			to.Raw = []byte(content)
+			if c.Consul.Map != "" {
+				vMap := MapPath(c.Content.Map, []byte(content)).(map[string]interface{})
+				to.Merge(vMap)
+				dataProcessed = vMap
+			} else {
+				to.Raw = []byte(content)
+				dataProcessed = []byte(content)
+			}
 		} else {
 			// convert to map
 			var vMap map[string]interface{}
@@ -193,14 +222,22 @@ func (c ConfigStatic) load(ctx context.Context, to *Data, cache *Cache) error {
 				return err
 			}
 
+			vMap, ok := MapPath(c.Content.Map, InnerPath(c.Content.InnerPath, vMap)).(map[string]interface{})
+			if !ok {
+				return fmt.Errorf("content mapping error")
+			}
+
 			to.Merge(vMap)
+			dataProcessed = vMap
 		}
+
+		to.AddHold(c.Content.Name, dataProcessed)
 	}
 
 	return nil
 }
 
-func (c ConfigDynamic) load(ctx context.Context, wg *sync.WaitGroup, to *Data, cache *Cache, filePath string) (context.Context, error) {
+func (c ConfigDynamic) load(ctx context.Context, wg *sync.WaitGroup, to *Data, cache *Cache, filePath, holdName string, call Call) (context.Context, error) {
 	if wg == nil {
 		wg = &sync.WaitGroup{}
 	}
@@ -254,6 +291,7 @@ func (c ConfigDynamic) load(ctx context.Context, wg *sync.WaitGroup, to *Data, c
 				case data := <-ch:
 					if c.Consul.Raw {
 						to.Raw = data
+						to.AddHold(c.Consul.Name, data)
 					} else {
 						// convert to map
 						var vMap map[string]interface{}
@@ -266,16 +304,29 @@ func (c ConfigDynamic) load(ctx context.Context, wg *sync.WaitGroup, to *Data, c
 						// get back old map
 						to.Map = copyMap(recordToMap)
 						to.Merge(vMap)
+						to.AddHold(c.Consul.Name, vMap)
 					}
 
 					if to.Raw != nil {
-						if err := cache.File.SetRaw(filePath, to.Raw); err != nil {
-							logFromCtx(ctx).Warn("failed to save dynamic consul data to file", "filePath", filePath, "err", err.Error())
-						}
+						to.AddHold(holdName, to.Raw)
 					} else {
-						if err := cache.File.SetWithCodec(filePath, to.Map); err != nil {
-							logFromCtx(ctx).Warn("failed to save dynamic consul data to file", "filePath", filePath, "err", err.Error())
+						to.AddHold(holdName, to.Map)
+					}
+
+					if filePath != "" {
+						if to.Raw != nil {
+							if err := cache.File.SetRaw(filePath, to.Raw); err != nil {
+								logFromCtx(ctx).Warn("failed to save dynamic consul data to file", "filePath", filePath, "err", err.Error())
+							}
+						} else {
+							if err := cache.File.SetWithCodec(filePath, to.Map); err != nil {
+								logFromCtx(ctx).Warn("failed to save dynamic consul data to file", "filePath", filePath, "err", err.Error())
+							}
 						}
+					}
+
+					if call != nil {
+						call(ctx, holdName, to.Hold)
 					}
 				}
 			}

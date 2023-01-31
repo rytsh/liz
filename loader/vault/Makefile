@@ -23,7 +23,7 @@ vault-role:
 		capabilities = ["read", "list"]
 		}
 	EOF
-	vault write auth/approle/role/my-role bind_secret_id=false secret_id_bound_cidrs="127.0.0.0/8,172.17.0.0/16" policies="default,secret-read"
+	vault write auth/approle/role/my-role bind_secret_id=false secret_id_bound_cidrs="0.0.0.0/0" policies="default,secret-read"
 	vault read -field=role_id auth/approle/role/my-role/role-id
 
 test: ## Run tests

@@ -9,8 +9,21 @@ import (
 )
 
 type Data struct {
-	Map map[string]interface{}
-	Raw []byte
+	Map  map[string]interface{}
+	Raw  []byte
+	Hold map[string]interface{}
+}
+
+func (d *Data) AddHold(k string, v interface{}) {
+	if k == "" {
+		return
+	}
+
+	if d.Hold == nil {
+		d.Hold = map[string]interface{}{}
+	}
+
+	d.Hold[k] = v
 }
 
 func (d *Data) Merge(v map[string]interface{}) {

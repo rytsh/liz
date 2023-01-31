@@ -2,22 +2,20 @@ module github.com/rytsh/liz/loader
 
 go 1.18
 
-replace github.com/rytsh/liz/loader/consul => ./consul
-
-replace github.com/rytsh/liz/loader/vault => ./vault
-
-replace github.com/rytsh/liz/loader/file => ./file
-
-replace github.com/rytsh/liz/utils/mapx => ../utils/mapx
-
-replace github.com/rytsh/liz/utils/templatex => ../utils/templatex
+replace (
+	github.com/rytsh/liz/loader/consul => ./consul
+	github.com/rytsh/liz/loader/file => ./file
+	github.com/rytsh/liz/loader/vault => ./vault
+	github.com/rytsh/liz/utils/mapx => ../utils/mapx
+	github.com/rytsh/liz/utils/templatex => ../utils/templatex
+)
 
 require (
 	github.com/rytsh/liz/loader/consul v0.2.0
 	github.com/rytsh/liz/loader/file v0.2.0
 	github.com/rytsh/liz/loader/vault v0.2.0
 	github.com/rytsh/liz/utils/mapx v0.1.1
-	github.com/rytsh/liz/utils/templatex v0.1.2
+	github.com/rytsh/liz/utils/templatex v0.1.3
 )
 
 require (

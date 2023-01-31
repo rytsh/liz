@@ -56,12 +56,6 @@ func TestConfigs_Load(t *testing.T) {
 							Vault: &ConfigVault{
 								Path:       "test",
 								PathPrefix: "secret",
-								AdditionalPaths: []ConfigVaultAdditional{
-									{
-										Map:  "myValue2/in",
-										Path: "inner/x",
-									},
-								},
 							},
 						},
 					},
@@ -82,11 +76,6 @@ func TestConfigs_Load(t *testing.T) {
 			},
 		},
 	}
-
-	// set consul address
-	os.Setenv("CONSUL_HTTP_ADDR", "http://localhost:8500")
-	os.Setenv("VAULT_ADDR", "http://localhost:8200")
-	os.Setenv("VAULT_ROLE_ID", "88eda05e-b98e-dda4-7251-e97a0638adc9")
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
