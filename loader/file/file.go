@@ -10,8 +10,9 @@ import (
 )
 
 var (
-	defaultFileFlag int         = os.O_WRONLY | os.O_CREATE | os.O_TRUNC
-	defaultFilePerm fs.FileMode = 0o644
+	defaultFileFlag   int         = os.O_WRONLY | os.O_CREATE | os.O_TRUNC
+	defaultFilePerm   fs.FileMode = 0o644
+	defaultFolderPerm fs.FileMode = 0o755
 )
 
 type API struct {
@@ -50,6 +51,14 @@ func (a *API) openFileRead(path string) (*os.File, error) {
 }
 
 func (a *API) openFileWrite(path string) (*os.File, error) {
+	// create folder if not exist
+	folder := filepath.Dir(path)
+	if _, err := os.Stat(folder); os.IsNotExist(err) {
+		if err := os.MkdirAll(folder, defaultFolderPerm); err != nil {
+			return nil, fmt.Errorf("failed to create folder %s: %w", folder, err)
+		}
+	}
+
 	if a.FileFlag == 0 {
 		a.FileFlag = defaultFileFlag
 	}

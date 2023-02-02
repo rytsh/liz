@@ -165,7 +165,7 @@ foo: bar
 		{
 			name: "toml set",
 			args: args{
-				path: "test.toml",
+				path: "dummy/test.toml",
 				data: map[string]interface{}{
 					"foo": "bar",
 					"bar": map[string]interface{}{
@@ -220,7 +220,7 @@ func TestAPI_Set(t *testing.T) {
 		{
 			name: "raw set",
 			args: args{
-				path: "test.json",
+				path: "dummy/test.json",
 				data: []byte(`anyting can be here`),
 			},
 			compare: []byte(`anyting can be here`),
