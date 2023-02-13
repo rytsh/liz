@@ -3,7 +3,6 @@ package templatex
 import (
 	"bytes"
 	"fmt"
-	"io"
 	"sort"
 	textTemplate "text/template"
 
@@ -11,8 +10,9 @@ import (
 )
 
 type Template struct {
-	template *textTemplate.Template
-	funcs    map[string]interface{}
+	template       *textTemplate.Template
+	templateParsed *textTemplate.Template
+	funcs          map[string]interface{}
 }
 
 func New(opts ...functions.Option) *Template {
@@ -57,67 +57,116 @@ func (t *Template) SetDelims(left, right string) *Template {
 }
 
 func (t *Template) setFunctions(opts ...functions.Option) {
-	t.funcs = functions.New(opts...).Funcs()
+	optsNew := make([]functions.Option, 0, len(opts)+1)
+	optsNew = append(optsNew, functions.WithFnValue(t))
+	optsNew = append(optsNew, opts...)
+
+	t.funcs = functions.New(optsNew...).Funcs()
 	t.template.Funcs(t.funcs)
 }
 
-func (t *Template) ParseGlob(pattern string) (*Template, error) {
+func (t *Template) AddFunc(funcMap textTemplate.FuncMap) {
+	for k, v := range funcMap {
+		t.funcs[k] = v
+	}
+
+	t.template.Funcs(funcMap)
+}
+
+func (t *Template) ParseGlob(pattern string) error {
 	if pattern == "" {
-		return t, nil
+		return nil
 	}
 
 	tpl, err := t.template.ParseGlob(pattern)
 	if err != nil {
-		return nil, fmt.Errorf("Parse error: %w", err)
+		return fmt.Errorf("Parse error: %w", err)
 	}
 
 	t.template = tpl
 
-	return t, nil
+	return nil
 }
 
-func (t *Template) ExecuteBytes(v any, content string) ([]byte, error) {
-	output, err := t.execute(v, content)
+// Parse content and set new template to parsed.
+func (t *Template) Parse(content string) error {
+	tpl, err := t.template.Clone()
 	if err != nil {
-		return output.Bytes(), err
+		return fmt.Errorf("execute clone error: %w", err)
+	}
+
+	// Execute the template and write the output to the buffer
+	tpl, err = tpl.Parse(content)
+	if err != nil {
+		return fmt.Errorf("Parse error: %w", err)
+	}
+
+	t.templateParsed = tpl
+
+	return nil
+}
+
+func (t *Template) Execute(opts ...Option) error {
+	o := &options{
+		writer: &bytes.Buffer{},
+	}
+	for _, opt := range opts {
+		opt(o)
+	}
+
+	err := t.execute(o)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (t *Template) ExecuteBuffer(opts ...Option) ([]byte, error) {
+	output := &bytes.Buffer{}
+	o := &options{}
+	for _, opt := range opts {
+		opt(o)
+	}
+
+	o.writer = output
+
+	err := t.execute(o)
+	if err != nil {
+		return nil, err
 	}
 
 	return output.Bytes(), nil
 }
 
-func (t *Template) Execute(v any, content string) (string, error) {
-	output, err := t.execute(v, content)
-	if err != nil {
-		return "", err
+func (t *Template) execute(o *options) error {
+	tpl := t.template
+	if o.parsed && t.templateParsed != nil {
+		tpl = t.templateParsed
 	}
 
-	return output.String(), nil
-}
-
-func (t *Template) execute(v any, content string) (*bytes.Buffer, error) {
-	var b bytes.Buffer
-
-	tpl, err := t.template.Clone()
+	tpl, err := tpl.Clone()
 	if err != nil {
-		return nil, fmt.Errorf("execute clone error: %w", err)
-	}
-	// Execute the template and write the output to the buffer
-	if err := textTemplate.Must(tpl.Parse(content)).Execute(&b, v); err != nil {
-		return nil, fmt.Errorf("Execute error: %w", err)
+		return fmt.Errorf("execute clone error: %w", err)
 	}
 
-	return &b, nil
-}
-
-func (t *Template) ExecuteContent(writer io.Writer, v any, content []byte) error {
-	tpl, err := t.template.Clone()
-	if err != nil {
-		return fmt.Errorf("ExecuteContent clone error: %w", err)
+	parsedTpl := tpl
+	if !o.parsed {
+		parsedTpl, err = tpl.Parse(o.content)
+		if err != nil {
+			return fmt.Errorf("execute parse error: %w", err)
+		}
 	}
 
 	// Execute the template and write the output to the buffer
-	if err := textTemplate.Must(tpl.Parse(string(content))).Execute(writer, v); err != nil {
-		return fmt.Errorf("ExecuteContent error: %w", err)
+	if o.template != "" {
+		err = parsedTpl.ExecuteTemplate(o.writer, o.template, o.values)
+	} else {
+		err = parsedTpl.Execute(o.writer, o.values)
+	}
+
+	if err != nil {
+		return fmt.Errorf("Execute error: %w", err)
 	}
 
 	return nil

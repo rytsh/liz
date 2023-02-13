@@ -42,7 +42,7 @@ func TestTemplate_Execute(t *testing.T) {
 				v:       map[string]interface{}{"fileName": "custom.go"},
 				content: `{{ fileExists .fileName }}`,
 			},
-			opts:    []functions.Option{functions.WorkDir("./functions/custom")},
+			opts:    []functions.Option{functions.WithWorkDir("./functions/custom")},
 			want:    "true",
 			wantErr: false,
 		},
@@ -52,7 +52,7 @@ func TestTemplate_Execute(t *testing.T) {
 				v:       map[string]interface{}{"dir": "."},
 				content: `{{ range readDir .dir }}{{ .Name }}{{ end}}`,
 			},
-			opts:    []functions.Option{functions.WorkDir("./functions/custom")},
+			opts:    []functions.Option{functions.WithWorkDir("./functions/custom")},
 			want:    "custom.go",
 			wantErr: false,
 		},
@@ -62,7 +62,7 @@ func TestTemplate_Execute(t *testing.T) {
 				v:       map[string]interface{}{"name": "x"},
 				content: `{{ custom .name }}`,
 			},
-			opts: []functions.Option{functions.AddFunc("custom", func(x string) string {
+			opts: []functions.Option{functions.WithAddFunc("custom", func(x string) string {
 				return x + "custom"
 			})},
 			want:    "xcustom",
@@ -74,13 +74,13 @@ func TestTemplate_Execute(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			templateEngine := New(tt.opts...)
 
-			got, err := templateEngine.Execute(tt.args.v, tt.args.content)
+			got, err := templateEngine.ExecuteBuffer(WithData(tt.args.v), WithContent(tt.args.content))
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Template.Execute() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if got != tt.want {
-				t.Errorf("Template.Execute() = %v, want %v", got, tt.want)
+			if string(got) != tt.want {
+				t.Errorf("Template.Execute() = %s, want %s", got, tt.want)
 			}
 		})
 	}
