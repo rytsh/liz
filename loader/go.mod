@@ -15,7 +15,7 @@ require (
 	github.com/rytsh/liz/loader/file v0.2.1
 	github.com/rytsh/liz/loader/vault v0.2.0
 	github.com/rytsh/liz/utils/mapx v0.1.1
-	github.com/rytsh/liz/utils/templatex v0.1.3
+	github.com/rytsh/liz/utils/templatex v0.2.0
 )
 
 require (

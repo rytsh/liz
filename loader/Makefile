@@ -1,6 +1,6 @@
 .DEFAULT_GOAL := help
 
-.PHONY: vault consul test test-env coverage help html html-gen html-wsl
+.PHONY: vault consul test test-short coverage help html html-gen html-wsl
 
 vault: ## Run vault in docker -it
 	docker run -it --name vault -p 8200:8200 vault
@@ -12,7 +12,10 @@ test: export CONSUL_HTTP_ADDR ?= http://localhost:8500
 test: export VAULT_ADDR ?= http://localhost:8200
 # test: export VAULT_ROLE_ID ?= 88eda05e-b98e-dda4-7251-e97a0638adc9
 test: ## Run tests
-	 go test -v -race ./...
+	go test -v -race ./...
+
+test-short: ## Run tests short
+	go test -v -race -short ./...
 
 coverage: ## Run unit tests with coverage
 	@go test -v -race -cover -coverpkg=./... -coverprofile=coverage.out -covermode=atomic ./...

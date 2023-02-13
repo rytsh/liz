@@ -8,6 +8,7 @@ import (
 	"sync"
 
 	"github.com/rytsh/liz/loader/file"
+	"github.com/rytsh/liz/utils/templatex"
 )
 
 type Call func(context.Context, string, map[string]interface{})
@@ -185,18 +186,18 @@ func (c ConfigStatic) load(ctx context.Context, to *Data, cache *Cache) error {
 	if c.Content != nil {
 		content := c.Content.Content
 		if c.Content.Template {
-			v, err := cache.Template.Execute(nil, content)
+			v, err := cache.Template.ExecuteBuffer(templatex.WithContent(content))
 			if err != nil {
 				return err
 			}
 
-			content = v
+			content = string(v)
 		}
 
 		var dataProcessed interface{}
 
 		if c.Content.Raw {
-			if c.Consul.Map != "" {
+			if c.Content.Map != "" {
 				vMap := MapPath(c.Content.Map, []byte(content)).(map[string]interface{})
 				to.Merge(vMap)
 				dataProcessed = vMap
