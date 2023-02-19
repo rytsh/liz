@@ -2,6 +2,7 @@ package loader
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"path"
 	"strings"
@@ -88,6 +89,15 @@ func (c ConfigStatic) load(ctx context.Context, to *Data, cache *Cache) error {
 			return err
 		}
 
+		if c.Consul.Template {
+			v, err := cache.Template.ExecuteBuffer(templatex.WithContent(string(data)), templatex.WithData(to.Hold))
+			if err != nil {
+				return err
+			}
+
+			data = v
+		}
+
 		var dataProcessed interface{}
 
 		if c.Consul.Raw {
@@ -132,24 +142,52 @@ func (c ConfigStatic) load(ctx context.Context, to *Data, cache *Cache) error {
 		cache.Vault.AppRoleBasePath = c.Vault.AppRoleBasePath
 
 		// load main secret
-		v, err := cache.Vault.LoadMap(ctx, c.Vault.PathPrefix, c.Vault.Path)
+		vMap, err := cache.Vault.LoadMap(ctx, c.Vault.PathPrefix, c.Vault.Path)
 		if err != nil {
 			return err
 		}
 
-		v, ok := MapPath(c.Vault.Map, InnerPath(c.Vault.InnerPath, v)).(map[string]interface{})
+		if c.Vault.Template {
+			data, err := json.Marshal(vMap)
+			if err != nil {
+				return err
+			}
+
+			vRendered, err := cache.Template.ExecuteBuffer(templatex.WithContent(string(data)), templatex.WithData(to.Hold))
+			if err != nil {
+				return err
+			}
+
+			var vX map[string]interface{}
+			if err := json.Unmarshal(vRendered, &vX); err != nil {
+				return err
+			}
+
+			vMap = vX
+		}
+
+		vMap, ok := MapPath(c.Vault.Map, InnerPath(c.Vault.InnerPath, vMap)).(map[string]interface{})
 		if !ok {
 			return fmt.Errorf("vault mapping error")
 		}
 
-		to.Merge(v)
-		to.AddHold(c.Vault.Name, v)
+		to.Merge(vMap)
+		to.AddHold(c.Vault.Name, vMap)
 	}
 
 	if c.File != nil {
 		data, err := cache.File.LoadRaw(c.File.Path)
 		if err != nil {
 			return err
+		}
+
+		if c.File.Template {
+			v, err := cache.Template.ExecuteBuffer(templatex.WithContent(string(data)), templatex.WithData(to.Hold))
+			if err != nil {
+				return err
+			}
+
+			data = v
 		}
 
 		var dataProcessed interface{}
@@ -186,7 +224,7 @@ func (c ConfigStatic) load(ctx context.Context, to *Data, cache *Cache) error {
 	if c.Content != nil {
 		content := c.Content.Content
 		if c.Content.Template {
-			v, err := cache.Template.ExecuteBuffer(templatex.WithContent(content))
+			v, err := cache.Template.ExecuteBuffer(templatex.WithContent(content), templatex.WithData(to.Hold))
 			if err != nil {
 				return err
 			}
@@ -290,6 +328,16 @@ func (c ConfigDynamic) load(ctx context.Context, wg *sync.WaitGroup, to *Data, c
 				case <-ctx.Done():
 					return
 				case data := <-ch:
+					if c.Consul.Template {
+						v, err := cache.Template.ExecuteBuffer(templatex.WithContent(string(data)), templatex.WithData(to.Hold))
+						if err != nil {
+							logFromCtx(ctx).Warn("failed to execute consul template", "err", err.Error())
+							continue
+						}
+
+						data = v
+					}
+
 					if c.Consul.Raw {
 						to.Raw = data
 						to.AddHold(c.Consul.Name, data)

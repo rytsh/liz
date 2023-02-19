@@ -44,6 +44,51 @@ func TestConfigs_Load(t *testing.T) {
 			},
 		},
 		{
+			name: "test vault",
+			c: Configs{
+				{
+					Export: tempDir + "/test",
+					Statics: []ConfigStatic{
+						{
+							Vault: &ConfigVault{
+								Path:       "test",
+								PathPrefix: "secret",
+								Template:   true,
+							},
+						},
+					},
+				},
+			},
+			skip: true,
+			want: want{
+				content: `test: "1234"` + "\n",
+				path:    tempDir + "/test",
+			},
+		},
+		{
+			name: "test consul",
+			c: Configs{
+				{
+					Export: tempDir + "/test",
+					Statics: []ConfigStatic{
+						{
+							Consul: &ConfigConsul{
+								Path:       "test",
+								PathPrefix: "secret",
+								Template:   true,
+								Raw:        true,
+							},
+						},
+					},
+				},
+			},
+			skip: true,
+			want: want{
+				content: `test: 1234`,
+				path:    tempDir + "/test",
+			},
+		},
+		{
 			name: "test with dynamic",
 			c: Configs{
 				{

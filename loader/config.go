@@ -37,6 +37,8 @@ type ConfigConsul struct {
 	InnerPath string
 	// Map is the wrapper map, / separated as db/settings.
 	Map string
+	// Template to run go template after the load.
+	Template bool
 }
 
 type ConfigVault struct {
@@ -51,6 +53,8 @@ type ConfigVault struct {
 	InnerPath string
 	// Map is the wrapper map, / separated as db/settings.
 	Map string
+	// Template to run go template after the load.
+	Template bool
 }
 
 type ConfigFile struct {
@@ -65,19 +69,22 @@ type ConfigFile struct {
 	InnerPath string
 	// Map is the wrapper map, / separated as db/settings.
 	Map string
+	// Template to run go template after the load.
+	Template bool
 }
 
 type ConfigContent struct {
 	// Name for export, default is empty.
 	Name string
 	// Codec YAML,JSON,TOML default is YAML.
-	Codec    string
-	Content  string
-	Raw      bool
-	Template bool
+	Codec   string
+	Content string
+	Raw     bool
 	// InnerPath is get the inner path from vault response, / separated as db/settings.
 	// Cannot work with Raw.
 	InnerPath string
 	// Map is the wrapper map, / separated as db/settings.
 	Map string
+	// Template to run go template after the load.
+	Template bool
 }
