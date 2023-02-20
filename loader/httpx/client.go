@@ -73,7 +73,6 @@ func (c *Client) Send(
 	headers map[string]interface{},
 	payload []byte,
 	retry *Retry,
-	skipVerify bool,
 ) (*ClientResponse, error) {
 	var resp *http.Response
 
