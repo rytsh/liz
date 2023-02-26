@@ -6,7 +6,7 @@ import (
 	"sort"
 	textTemplate "text/template"
 
-	"github.com/rytsh/liz/utils/templatex/functions"
+	"github.com/rytsh/liz/utils/templatex/store"
 )
 
 type Template struct {
@@ -15,7 +15,7 @@ type Template struct {
 	funcs          map[string]interface{}
 }
 
-func New(opts ...functions.Option) *Template {
+func New(opts ...store.Option) *Template {
 	tpl := &Template{
 		template: textTemplate.New("txt"),
 	}
@@ -56,12 +56,12 @@ func (t *Template) SetDelims(left, right string) *Template {
 	return t
 }
 
-func (t *Template) setFunctions(opts ...functions.Option) {
-	optsNew := make([]functions.Option, 0, len(opts)+1)
-	optsNew = append(optsNew, functions.WithFnValue(t))
+func (t *Template) setFunctions(opts ...store.Option) {
+	optsNew := make([]store.Option, 0, len(opts)+1)
+	optsNew = append(optsNew, store.WithFnValue(t))
 	optsNew = append(optsNew, opts...)
 
-	t.funcs = functions.New(optsNew...).Funcs()
+	t.funcs = store.New(optsNew...).Funcs()
 	t.template.Funcs(t.funcs)
 }
 

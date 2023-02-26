@@ -3,7 +3,7 @@ package templatex
 import (
 	"testing"
 
-	"github.com/rytsh/liz/utils/templatex/functions"
+	"github.com/rytsh/liz/utils/templatex/store"
 )
 
 func TestTemplate_Execute(t *testing.T) {
@@ -14,7 +14,7 @@ func TestTemplate_Execute(t *testing.T) {
 	tests := []struct {
 		name    string
 		args    args
-		opts    []functions.Option
+		opts    []store.Option
 		want    string
 		wantErr bool
 	}{
@@ -37,32 +37,12 @@ func TestTemplate_Execute(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "Os workdir",
-			args: args{
-				v:       map[string]interface{}{"fileName": "custom.go"},
-				content: `{{ fileExists .fileName }}`,
-			},
-			opts:    []functions.Option{functions.WithWorkDir("./functions/custom")},
-			want:    "true",
-			wantErr: false,
-		},
-		{
-			name: "readDir",
-			args: args{
-				v:       map[string]interface{}{"dir": "."},
-				content: `{{ range readDir .dir }}{{ .Name }}{{ end}}`,
-			},
-			opts:    []functions.Option{functions.WithWorkDir("./functions/custom")},
-			want:    "custom.go",
-			wantErr: false,
-		},
-		{
 			name: "custom func",
 			args: args{
 				v:       map[string]interface{}{"name": "x"},
 				content: `{{ custom .name }}`,
 			},
-			opts: []functions.Option{functions.WithAddFunc("custom", func(x string) string {
+			opts: []store.Option{store.WithAddFunc("custom", func(x string) string {
 				return x + "custom"
 			})},
 			want:    "xcustom",

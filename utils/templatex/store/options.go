@@ -1,19 +1,12 @@
-package functions
+package store
 
 type options struct {
-	workDir      string
 	disableFuncs []string
 	addFuncs     map[string]interface{}
 	fnValue      interface{}
 }
 
 type Option func(*options)
-
-func WithWorkDir(workDir string) Option {
-	return func(o *options) {
-		o.workDir = workDir
-	}
-}
 
 func WithDisableFuncs(funcs ...string) Option {
 	return func(o *options) {
