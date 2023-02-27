@@ -16,19 +16,12 @@ type Map struct {
 	mutex sync.RWMutex
 }
 
-func (m *Map) init() any {
+func (m *Map) init() *Map {
 	if m.value == nil {
 		m.value = make(map[string]interface{})
 	}
 
 	return m
-}
-
-func (m *Map) FuncMap() map[string]interface{} {
-	return map[string]interface{}{
-		"Set": m.Set,
-		"Get": m.Get,
-	}
 }
 
 func (m *Map) Set(key string, value interface{}) map[string]interface{} {

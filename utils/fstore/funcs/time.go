@@ -19,3 +19,7 @@ func (Time) RFC3339() string {
 func (Time) Format(format string, t time.Time) string {
 	return t.Format(format)
 }
+
+func (Time) UTC(t time.Time) time.Time {
+	return t.UTC()
+}

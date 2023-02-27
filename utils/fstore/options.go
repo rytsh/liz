@@ -21,9 +21,9 @@ func WithDisableFuncs(disableFuncs ...string) Option {
 	}
 }
 
-func WithTrust() Option {
+func WithTrust(trust bool) Option {
 	return func(options *options) {
-		options.trust = true
+		options.trust = trust
 	}
 }
 

@@ -43,6 +43,14 @@ func funcX(o options) func(t *templatex.Template) map[string]interface{} {
 			AddArgument("template", t).
 			AddArgument("workDir", o.workDir)
 
+		for name, v := range definedFuncMaps() {
+			if _, ok := disabled[name]; ok {
+				continue
+			}
+
+			storeHolder.AddFuncs(v)
+		}
+
 		for _, fName := range generic.CallReg.GetFunctionNames() {
 			if _, ok := disabled[fName]; ok {
 				continue
