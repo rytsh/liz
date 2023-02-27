@@ -29,6 +29,11 @@ func optionRun(opts ...Option) options {
 
 func funcX(o options) func(t *templatex.Template) map[string]interface{} {
 	return func(t *templatex.Template) map[string]interface{} {
+		disabled := make(map[string]struct{}, len(o.disableFuncs))
+		for _, d := range o.disableFuncs {
+			disabled[d] = struct{}{}
+		}
+
 		storeHolder := store.Holder{}
 		storeHolder.AddFuncs(sprig.GenericFuncMap())
 
@@ -39,6 +44,10 @@ func funcX(o options) func(t *templatex.Template) map[string]interface{} {
 			AddArgument("workDir", o.workDir)
 
 		for _, fName := range generic.CallReg.GetFunctionNames() {
+			if _, ok := disabled[fName]; ok {
+				continue
+			}
+
 			storeHolder.AddFunc(fName, generic.GetFunc(fName))
 		}
 
