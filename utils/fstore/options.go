@@ -1,10 +1,14 @@
 package fstore
 
-import "github.com/rytsh/liz/utils/templatex"
+import (
+	"github.com/rytsh/liz/utils/templatex"
+	"github.com/worldline-go/logz"
+)
 
 type options struct {
 	disableFuncs []string
 	trust        bool
+	log          logz.Adapter
 	workDir      string
 	templatex    *templatex.Template
 }
@@ -36,5 +40,11 @@ func WithWorkDir(workDir string) Option {
 func WithTemplatex(t *templatex.Template) Option {
 	return func(options *options) {
 		options.templatex = t
+	}
+}
+
+func WithLog(log logz.Adapter) Option {
+	return func(options *options) {
+		options.log = log
 	}
 }

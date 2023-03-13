@@ -40,6 +40,7 @@ func funcX(o options) func(t *templatex.Template) map[string]interface{} {
 		// custom functions
 		generic.CallReg.
 			AddArgument("trust", o.trust).
+			AddArgument("log", o.log).
 			AddArgument("template", t).
 			AddArgument("workDir", o.workDir)
 

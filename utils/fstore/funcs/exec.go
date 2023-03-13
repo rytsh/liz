@@ -1,6 +1,7 @@
 package funcs
 
 import (
+	"fmt"
 	"io"
 	"os/exec"
 
@@ -8,18 +9,24 @@ import (
 	"github.com/kballard/go-shellquote"
 	"github.com/rytsh/liz/utils/fstore/generic"
 	"github.com/rytsh/liz/utils/shutdown"
+	"github.com/worldline-go/logz"
 )
 
 func init() {
-	generic.CallReg.AddFunction("exec", new(Exec).init, "trust")
+	generic.CallReg.AddFunction("exec", new(Exec).init, "trust", "log")
 }
 
 type Exec struct {
 	trust bool
+	log   logz.Adapter
 }
 
-func (e Exec) init(trust bool) any {
+func (e Exec) init(trust bool, log logz.Adapter) any {
 	e.trust = trust
+	e.log = log
+	if e.log == nil {
+		e.log = logz.AdapterNoop{}
+	}
 
 	return e.Exec
 }
@@ -75,6 +82,8 @@ func (e Exec) Exec(cli string) (map[string]interface{}, error) {
 	}
 
 	if err := cmd.Wait(); err != nil {
+		e.log.Error("failed to run exec")
+		fmt.Println(string(cmdErrorResult))
 		return nil, err
 	}
 

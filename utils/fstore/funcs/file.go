@@ -21,7 +21,12 @@ func (f *File) init(trust bool) *File {
 	return f
 }
 
+// Deprecated: Use Write instead.
 func (f *File) Save(fileName string, data []byte) (bool, error) {
+	return f.Write(fileName, data)
+}
+
+func (f *File) Write(fileName string, data []byte) (bool, error) {
 	if !f.trust {
 		return false, generic.ErrTrustRequired
 	}

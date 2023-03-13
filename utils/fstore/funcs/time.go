@@ -12,6 +12,10 @@ func init() {
 
 type Time struct{}
 
+func (Time) Now() time.Time {
+	return time.Now()
+}
+
 func (Time) RFC3339() string {
 	return "2006-01-02T15:04:05Z07:00"
 }

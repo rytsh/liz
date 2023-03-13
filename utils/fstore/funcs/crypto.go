@@ -6,6 +6,7 @@ import (
 	"crypto/sha1"
 	"crypto/sha256"
 	"crypto/sha512"
+	"encoding/base64"
 	"encoding/hex"
 	"fmt"
 	"hash"
@@ -21,6 +22,28 @@ func init() {
 
 type Crypto struct{}
 
+func (Crypto) Base64(v any) (string, error) {
+	conv, err := cast.ToStringE(v)
+	if err != nil {
+		return "", err
+	}
+
+	return base64.StdEncoding.EncodeToString([]byte(conv)), nil
+}
+
+func (Crypto) Base64B(v []byte) string {
+	return base64.StdEncoding.EncodeToString(v)
+}
+
+func (Crypto) Base64Decode(v any) ([]byte, error) {
+	conv, err := cast.ToStringE(v)
+	if err != nil {
+		return nil, err
+	}
+
+	return base64.StdEncoding.DecodeString(conv)
+}
+
 func (Crypto) MD5(v any) (string, error) {
 	conv, err := cast.ToStringE(v)
 	if err != nil {
@@ -29,6 +52,12 @@ func (Crypto) MD5(v any) (string, error) {
 
 	hash := md5.Sum([]byte(conv))
 	return hex.EncodeToString(hash[:]), nil
+}
+
+// SHA1B hashes v and returns its SHA1 checksum in binary.
+func (Crypto) MD5B(v []byte) []byte {
+	hash := md5.Sum(v)
+	return hash[:]
 }
 
 // SHA1 hashes v and returns its SHA1 checksum.
@@ -42,6 +71,12 @@ func (Crypto) SHA1(v any) (string, error) {
 	return hex.EncodeToString(hash[:]), nil
 }
 
+// SHA1B hashes v and returns its SHA1 checksum in binary.
+func (Crypto) SHA1B(v []byte) []byte {
+	hash := sha1.Sum(v)
+	return hash[:]
+}
+
 // SHA256 hashes v and returns its SHA256 checksum.
 func (Crypto) SHA256(v any) (string, error) {
 	conv, err := cast.ToStringE(v)
@@ -51,6 +86,12 @@ func (Crypto) SHA256(v any) (string, error) {
 
 	hash := sha256.Sum256([]byte(conv))
 	return hex.EncodeToString(hash[:]), nil
+}
+
+// SHA256B hashes v and returns its SHA256 checksum in binary.
+func (Crypto) SHA256B(v []byte) []byte {
+	hash := sha256.Sum256(v)
+	return hash[:]
 }
 
 // FNV32a hashes v using fnv32a algorithm.

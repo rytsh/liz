@@ -3,8 +3,8 @@ module github.com/rytsh/liz/utils/fstore
 go 1.19
 
 replace (
-	github.com/rytsh/liz/utils/templatex => ../templatex
 	github.com/rytsh/liz/utils/shutdown => ../shutdown
+	github.com/rytsh/liz/utils/templatex => ../templatex
 )
 
 require (
@@ -22,6 +22,7 @@ require (
 	github.com/spf13/afero v1.9.4
 	github.com/spf13/cast v1.5.0
 	github.com/tdewolff/minify/v2 v2.12.4
+	github.com/worldline-go/logz v0.3.2
 	gopkg.in/yaml.v3 v3.0.1
 )
 
