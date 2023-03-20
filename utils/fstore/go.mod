@@ -15,7 +15,7 @@ require (
 	github.com/gomarkdown/markdown v0.0.0-20221013030248-663e2500819c
 	github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51
 	github.com/rs/zerolog v1.29.0
-	github.com/rytsh/call v0.2.0
+	github.com/rytsh/call v0.2.1
 	github.com/rytsh/liz/loader/file v0.2.1
 	github.com/rytsh/liz/utils/shutdown v0.1.0
 	github.com/rytsh/liz/utils/templatex v0.3.0

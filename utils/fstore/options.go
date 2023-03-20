@@ -11,9 +11,20 @@ type options struct {
 	log          logz.Adapter
 	workDir      string
 	templatex    *templatex.Template
+	specificFunc []string
 }
 
 type Option func(options *options)
+
+func WithSpecificFuncs(specificFuncs ...string) Option {
+	return func(options *options) {
+		if len(options.specificFunc) > 0 {
+			options.specificFunc = append(options.specificFunc, specificFuncs...)
+		} else {
+			options.specificFunc = specificFuncs
+		}
+	}
+}
 
 func WithDisableFuncs(disableFuncs ...string) Option {
 	return func(options *options) {

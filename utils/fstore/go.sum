@@ -183,8 +183,8 @@ github.com/rogpeppe/go-internal v1.9.0/go.mod h1:WtVeX8xhTBvf0smdhujwtBcq4Qrzq/f
 github.com/rs/xid v1.4.0/go.mod h1:trrq9SKmegXys3aeAKXMUTdJsYXVwGY3RLcfgqegfbg=
 github.com/rs/zerolog v1.29.0 h1:Zes4hju04hjbvkVkOhdl2HpZa+0PmVwigmo8XoORE5w=
 github.com/rs/zerolog v1.29.0/go.mod h1:NILgTygv/Uej1ra5XxGf82ZFSLk58MFGAUS2o6usyD0=
-github.com/rytsh/call v0.2.0 h1:WqLRntpU+25dXBieFWDFfnpT9UpUJSBrbwLmY5JPK1o=
-github.com/rytsh/call v0.2.0/go.mod h1:4aIFcb1suv0AGyveVNBJTRtcaZeaFua+P53H7t/bSls=
+github.com/rytsh/call v0.2.1 h1:NaEcbjLLOYttaJR615wDIgQ0Quy4A2uch15xYPPeQY0=
+github.com/rytsh/call v0.2.1/go.mod h1:4aIFcb1suv0AGyveVNBJTRtcaZeaFua+P53H7t/bSls=
 github.com/rytsh/liz/loader/file v0.2.1 h1:QPW0LDycqFs2Y6+kD0iN3zCmqsQtFpo14aCoD9/E0ww=
 github.com/rytsh/liz/loader/file v0.2.1/go.mod h1:KAe4Jd74v0IZZaydA/zVEXa14E8lpvi+1cb1fHwWYvA=
 github.com/shopspring/decimal v1.2.0 h1:abSATXmQEYyShuxI4/vyW3tV1MrKAJzCZ/0zLUXYbsQ=

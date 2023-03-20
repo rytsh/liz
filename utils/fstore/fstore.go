@@ -40,12 +40,16 @@ func funcX(o options) func(t *templatex.Template) map[string]interface{} {
 		// custom functions
 		generic.CallReg.
 			AddArgument("trust", o.trust).
-			AddArgument("log", o.log).
+			AddArgument("log", nil).
 			AddArgument("template", t).
 			AddArgument("workDir", o.workDir)
 
 		for name, v := range definedFuncMaps() {
 			if _, ok := disabled[name]; ok {
+				continue
+			}
+
+			if !checkSpecificFunc(o, name) {
 				continue
 			}
 
@@ -57,9 +61,29 @@ func funcX(o options) func(t *templatex.Template) map[string]interface{} {
 				continue
 			}
 
+			if !checkSpecificFunc(o, fName) {
+				continue
+			}
+
 			storeHolder.AddFunc(fName, generic.GetFunc(fName))
 		}
 
 		return storeHolder.Funcs()
 	}
+}
+
+func checkSpecificFunc(o options, name string) bool {
+	if len(o.specificFunc) > 0 {
+		foundName := false
+		for _, s := range o.specificFunc {
+			if s == name {
+				foundName = true
+				break
+			}
+		}
+
+		return foundName
+	}
+
+	return true
 }
