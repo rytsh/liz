@@ -2,6 +2,7 @@ package loader
 
 import (
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"path"
@@ -43,7 +44,7 @@ func (c Config) load(ctx context.Context, wg *sync.WaitGroup, cache *Cache, call
 
 	if len(c.Dynamics) > 0 {
 		for _, dynamic := range c.Dynamics {
-			waitCtx, err := dynamic.load(ctx, wg, &to, cache, c.Export, c.Name, call)
+			waitCtx, err := dynamic.load(ctx, wg, &to, cache, &c, call)
 			if err != nil {
 				return err
 			}
@@ -62,11 +63,11 @@ func (c Config) load(ctx context.Context, wg *sync.WaitGroup, cache *Cache, call
 
 		if c.Export != "" {
 			if to.Raw != nil {
-				if err := cache.File.SetRaw(c.Export, to.Raw); err != nil {
+				if err := cache.File.SetRaw(c.Export, to.Raw, file.WithFilePerm(c.FilePerm), file.WithFolderPerm(c.FolderPerm)); err != nil {
 					return err
 				}
 			} else {
-				if err := cache.File.SetWithCodec(c.Export, to.Map); err != nil {
+				if err := cache.File.SetWithCodec(c.Export, to.Map, file.WithFilePerm(c.FilePerm), file.WithFolderPerm(c.FolderPerm)); err != nil {
 					return err
 				}
 			}
@@ -126,13 +127,25 @@ func (c ConfigStatic) load(ctx context.Context, to *Data, cache *Cache) error {
 				return err
 			}
 
-			vMap, ok := MapPath(c.Consul.Map, InnerPath(c.Consul.InnerPath, vMap)).(map[string]interface{})
-			if !ok {
-				return fmt.Errorf("consul mapping error")
+			innerValue := MapPath(c.Consul.Map, InnerPath(c.Consul.InnerPath, vMap))
+			if _, ok := innerValue.(map[string]interface{}); ok {
+				to.Merge(innerValue.(map[string]interface{}))
+				dataProcessed = innerValue
+			} else {
+				content := fmt.Sprint(innerValue)
+				to.Raw = []byte(content)
+				dataProcessed = []byte(content)
+			}
+		}
+
+		if c.Consul.Base64 && to.Raw != nil {
+			// decode base64
+			to.Raw, err = base64.StdEncoding.DecodeString(string(to.Raw))
+			if err != nil {
+				return fmt.Errorf("consul decode base64 error: %w", err)
 			}
 
-			to.Merge(vMap)
-			dataProcessed = vMap
+			dataProcessed = to.Raw
 		}
 
 		to.AddHold(c.Consul.Name, dataProcessed)
@@ -166,13 +179,28 @@ func (c ConfigStatic) load(ctx context.Context, to *Data, cache *Cache) error {
 			vMap = vX
 		}
 
-		vMap, ok := MapPath(c.Vault.Map, InnerPath(c.Vault.InnerPath, vMap)).(map[string]interface{})
-		if !ok {
-			return fmt.Errorf("vault mapping error")
+		var dataProcessed interface{}
+		innerValue := MapPath(c.Vault.Map, InnerPath(c.Vault.InnerPath, vMap))
+		if _, ok := innerValue.(map[string]interface{}); ok {
+			to.Merge(innerValue.(map[string]interface{}))
+			dataProcessed = innerValue
+		} else {
+			content := fmt.Sprint(innerValue)
+			to.Raw = []byte(content)
+			dataProcessed = []byte(content)
 		}
 
-		to.Merge(vMap)
-		to.AddHold(c.Vault.Name, vMap)
+		if c.Vault.Base64 && to.Raw != nil {
+			// decode base64
+			to.Raw, err = base64.StdEncoding.DecodeString(string(to.Raw))
+			if err != nil {
+				return fmt.Errorf("vault decode base64 error: %w", err)
+			}
+
+			dataProcessed = to.Raw
+		}
+
+		to.AddHold(c.Vault.Name, dataProcessed)
 	}
 
 	if c.File != nil {
@@ -209,13 +237,25 @@ func (c ConfigStatic) load(ctx context.Context, to *Data, cache *Cache) error {
 				return err
 			}
 
-			vMap, ok := MapPath(c.File.Map, InnerPath(c.File.InnerPath, vMap)).(map[string]interface{})
-			if !ok {
-				return fmt.Errorf("file mapping error")
+			innerValue := MapPath(c.File.Map, InnerPath(c.File.InnerPath, vMap))
+			if _, ok := innerValue.(map[string]interface{}); ok {
+				to.Merge(innerValue.(map[string]interface{}))
+				dataProcessed = innerValue
+			} else {
+				content := fmt.Sprint(innerValue)
+				to.Raw = []byte(content)
+				dataProcessed = []byte(content)
+			}
+		}
+
+		if c.File.Base64 && to.Raw != nil {
+			// decode base64
+			to.Raw, err = base64.StdEncoding.DecodeString(string(to.Raw))
+			if err != nil {
+				return fmt.Errorf("file decode base64 error: %w", err)
 			}
 
-			to.Merge(vMap)
-			dataProcessed = vMap
+			dataProcessed = to.Raw
 		}
 
 		to.AddHold(c.File.Name, dataProcessed)
@@ -261,13 +301,26 @@ func (c ConfigStatic) load(ctx context.Context, to *Data, cache *Cache) error {
 				return err
 			}
 
-			vMap, ok := MapPath(c.Content.Map, InnerPath(c.Content.InnerPath, vMap)).(map[string]interface{})
-			if !ok {
-				return fmt.Errorf("content mapping error")
+			innerValue := MapPath(c.Content.Map, InnerPath(c.Content.InnerPath, vMap))
+			if _, ok := innerValue.(map[string]interface{}); ok {
+				to.Merge(innerValue.(map[string]interface{}))
+				dataProcessed = innerValue
+			} else {
+				content := fmt.Sprint(innerValue)
+				to.Raw = []byte(content)
+				dataProcessed = []byte(content)
+			}
+		}
+
+		if c.Content.Base64 && to.Raw != nil {
+			// decode base64
+			var err error
+			to.Raw, err = base64.StdEncoding.DecodeString(string(to.Raw))
+			if err != nil {
+				return fmt.Errorf("file decode base64 error: %w", err)
 			}
 
-			to.Merge(vMap)
-			dataProcessed = vMap
+			dataProcessed = to.Raw
 		}
 
 		to.AddHold(c.Content.Name, dataProcessed)
@@ -276,7 +329,7 @@ func (c ConfigStatic) load(ctx context.Context, to *Data, cache *Cache) error {
 	return nil
 }
 
-func (c ConfigDynamic) load(ctx context.Context, wg *sync.WaitGroup, to *Data, cache *Cache, filePath, holdName string, call Call) (context.Context, error) {
+func (c ConfigDynamic) load(ctx context.Context, wg *sync.WaitGroup, to *Data, cache *Cache, config *Config, call Call) (context.Context, error) {
 	if wg == nil {
 		wg = &sync.WaitGroup{}
 	}
@@ -357,25 +410,25 @@ func (c ConfigDynamic) load(ctx context.Context, wg *sync.WaitGroup, to *Data, c
 					}
 
 					if to.Raw != nil {
-						to.AddHold(holdName, to.Raw)
+						to.AddHold(config.Name, to.Raw)
 					} else {
-						to.AddHold(holdName, to.Map)
+						to.AddHold(config.Name, to.Map)
 					}
 
-					if filePath != "" {
+					if config.Export != "" {
 						if to.Raw != nil {
-							if err := cache.File.SetRaw(filePath, to.Raw); err != nil {
-								logFromCtx(ctx).Warn("failed to save dynamic consul data to file", "filePath", filePath, "err", err.Error())
+							if err := cache.File.SetRaw(config.Export, to.Raw, file.WithFilePerm(config.FilePerm), file.WithFolderPerm(config.FolderPerm)); err != nil {
+								logFromCtx(ctx).Warn("failed to save dynamic consul data to file", "filePath", config.Export, "err", err.Error())
 							}
 						} else {
-							if err := cache.File.SetWithCodec(filePath, to.Map); err != nil {
-								logFromCtx(ctx).Warn("failed to save dynamic consul data to file", "filePath", filePath, "err", err.Error())
+							if err := cache.File.SetWithCodec(config.Export, to.Map, file.WithFilePerm(config.FilePerm), file.WithFolderPerm(config.FolderPerm)); err != nil {
+								logFromCtx(ctx).Warn("failed to save dynamic consul data to file", "filePath", config.Export, "err", err.Error())
 							}
 						}
 					}
 
 					if call != nil {
-						call(ctx, holdName, to.Hold)
+						call(ctx, config.Name, to.Hold)
 					}
 				}
 			}

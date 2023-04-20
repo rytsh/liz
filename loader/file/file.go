@@ -17,9 +17,6 @@ var (
 
 type API struct {
 	Codec map[string]Codec
-
-	FileFlag int
-	Perm     fs.FileMode
 }
 
 func New() *API {
@@ -50,25 +47,32 @@ func (a *API) openFileRead(path string) (*os.File, error) {
 	return f, nil
 }
 
-func (a *API) openFileWrite(path string) (*os.File, error) {
+func (a *API) openFileWrite(path string, opts options) (*os.File, error) {
 	// create folder if not exist
 	folder := filepath.Dir(path)
 	if _, err := os.Stat(folder); os.IsNotExist(err) {
-		if err := os.MkdirAll(folder, defaultFolderPerm); err != nil {
+		folderPerm := defaultFolderPerm
+		if opts.folderPerm != nil {
+			folderPerm = *opts.folderPerm
+		}
+
+		if err := os.MkdirAll(folder, folderPerm); err != nil {
 			return nil, fmt.Errorf("failed to create folder %s: %w", folder, err)
 		}
 	}
 
-	if a.FileFlag == 0 {
-		a.FileFlag = defaultFileFlag
+	filePerm := defaultFilePerm
+	if opts.filePerm != nil {
+		filePerm = *opts.filePerm
 	}
 
-	if a.Perm == 0 {
-		a.Perm = defaultFilePerm
+	fileFlag := defaultFileFlag
+	if opts.fileFlag != nil {
+		fileFlag = *opts.fileFlag
 	}
 
 	// open file
-	f, err := os.OpenFile(path, a.FileFlag, a.Perm)
+	f, err := os.OpenFile(path, fileFlag, filePerm)
 	if err != nil {
 		return nil, fmt.Errorf("failed to open file %s: %w", path, err)
 	}
@@ -142,9 +146,16 @@ func (a *API) LoadContent(v []byte, dst interface{}, codec Codec) error {
 	return nil
 }
 
-func (a *API) SetWithCodec(path string, data any) error {
+func (a *API) SetWithCodec(path string, data any, opts ...Option) error {
+	var options options
+	for _, opt := range opts {
+		if err := opt(&options); err != nil {
+			return err
+		}
+	}
+
 	// open file
-	f, err := a.openFileWrite(path)
+	f, err := a.openFileWrite(path, options)
 	if err != nil {
 		return err
 	}
@@ -163,9 +174,16 @@ func (a *API) SetWithCodec(path string, data any) error {
 	return nil
 }
 
-func (a *API) SetRaw(path string, data []byte) error {
+func (a *API) SetRaw(path string, data []byte, opts ...Option) error {
+	var options options
+	for _, opt := range opts {
+		if err := opt(&options); err != nil {
+			return err
+		}
+	}
+
 	// open file
-	f, err := a.openFileWrite(path)
+	f, err := a.openFileWrite(path, options)
 	if err != nil {
 		return err
 	}

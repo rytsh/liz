@@ -120,6 +120,70 @@ func TestConfigs_Load(t *testing.T) {
 				path:    tempDir + "/testd.yml",
 			},
 		},
+		{
+			name: "test inner path",
+			c: Configs{
+				{
+					Export: tempDir + "/test.json",
+					Statics: []ConfigStatic{
+						{
+							Content: &ConfigContent{
+								Content:   `{"test": {"test-2": "mycontent"}}`,
+								InnerPath: "test",
+							},
+						},
+					},
+				},
+			},
+			want: want{
+				content: `{
+  "test-2": "mycontent"
+}
+`,
+				path: tempDir + "/test.json",
+			},
+		},
+		{
+			name: "test inner path raw",
+			c: Configs{
+				{
+					Export: tempDir + "/test",
+					Statics: []ConfigStatic{
+						{
+							Content: &ConfigContent{
+								Content:   `{"test": {"test-2": "mycontent"}}`,
+								InnerPath: "test/test-2",
+							},
+						},
+					},
+				},
+			},
+			want: want{
+				content: "mycontent",
+				path:    tempDir + "/test",
+			},
+		},
+		{
+			name: "test inner path raw with base64",
+			c: Configs{
+				{
+					Export: tempDir + "/test",
+					Statics: []ConfigStatic{
+						{
+							Content: &ConfigContent{
+								Content:   `{"test": {"test-2": "bWVyaGFiYQ=="}}`,
+								InnerPath: "test/test-2",
+								Base64:    true,
+							},
+						},
+					},
+				},
+			},
+			want: want{
+				content: "merhaba",
+				path:    tempDir + "/test",
+			},
+		},
 	}
 
 	for _, tt := range tests {

@@ -4,10 +4,12 @@ type Configs []Config
 
 type Config struct {
 	// Name for export value, default is empty.
-	Name     string
-	Export   string
-	Statics  []ConfigStatic
-	Dynamics []ConfigDynamic
+	Name       string
+	Export     string
+	FilePerm   string
+	FolderPerm string
+	Statics    []ConfigStatic
+	Dynamics   []ConfigDynamic
 }
 
 type ConfigStatic struct {
@@ -39,6 +41,8 @@ type ConfigConsul struct {
 	Map string
 	// Template to run go template after the load.
 	Template bool
+	// base64 to decode the content.
+	Base64 bool
 }
 
 type ConfigVault struct {
@@ -55,6 +59,8 @@ type ConfigVault struct {
 	Map string
 	// Template to run go template after the load.
 	Template bool
+	// base64 to decode the content.
+	Base64 bool
 }
 
 type ConfigFile struct {
@@ -71,6 +77,8 @@ type ConfigFile struct {
 	Map string
 	// Template to run go template after the load.
 	Template bool
+	// base64 to decode the content.
+	Base64 bool
 }
 
 type ConfigContent struct {
@@ -87,4 +95,6 @@ type ConfigContent struct {
 	Map string
 	// Template to run go template after the load.
 	Template bool
+	// base64 to decode the content.
+	Base64 bool
 }

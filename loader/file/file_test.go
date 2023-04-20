@@ -233,7 +233,7 @@ func TestAPI_Set(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			filePath := path.Join(tempdir, tt.args.path)
 
-			if err := a.SetRaw(filePath, tt.args.data); (err != nil) != tt.wantErr {
+			if err := a.SetRaw(filePath, tt.args.data, WithFilePerm("0600")); (err != nil) != tt.wantErr {
 				t.Errorf("API.SetRaw() error = %v, wantErr %v", err, tt.wantErr)
 			}
 
