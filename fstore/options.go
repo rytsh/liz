@@ -1,7 +1,7 @@
 package fstore
 
 import (
-	"github.com/rytsh/liz/utils/templatex"
+	"github.com/rytsh/liz/templatex"
 	"github.com/worldline-go/logz"
 )
 

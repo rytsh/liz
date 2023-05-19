@@ -9,8 +9,8 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/rytsh/liz/loader/file"
-	"github.com/rytsh/liz/utils/templatex"
+	"github.com/rytsh/liz/file"
+	"github.com/rytsh/liz/templatex"
 )
 
 type Call func(context.Context, string, map[string]interface{})

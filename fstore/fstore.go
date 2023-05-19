@@ -3,8 +3,8 @@ package fstore
 import (
 	"github.com/Masterminds/sprig/v3"
 	"github.com/rytsh/liz/fstore/generic"
-	"github.com/rytsh/liz/utils/templatex"
-	"github.com/rytsh/liz/utils/templatex/store"
+	"github.com/rytsh/liz/templatex"
+	"github.com/rytsh/liz/templatex/store"
 
 	_ "github.com/rytsh/liz/fstore/funcs"
 )

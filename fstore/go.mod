@@ -12,8 +12,8 @@ require (
 	github.com/rs/zerolog v1.29.0
 	github.com/rytsh/call v0.2.1
 	github.com/rytsh/liz/loader/file v0.2.1
-	github.com/rytsh/liz/utils/shutdown v0.1.0
-	github.com/rytsh/liz/utils/templatex v0.3.0
+	github.com/rytsh/liz/shutdown v0.1.0
+	github.com/rytsh/liz/templatex v0.1.0
 	github.com/spf13/afero v1.9.4
 	github.com/spf13/cast v1.5.0
 	github.com/tdewolff/minify/v2 v2.12.4

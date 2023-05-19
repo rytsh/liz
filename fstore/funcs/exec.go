@@ -8,7 +8,7 @@ import (
 	"github.com/cli/safeexec"
 	"github.com/kballard/go-shellquote"
 	"github.com/rytsh/liz/fstore/generic"
-	"github.com/rytsh/liz/utils/shutdown"
+	"github.com/rytsh/liz/shutdown"
 	"github.com/worldline-go/logz"
 )
 

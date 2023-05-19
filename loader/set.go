@@ -1,11 +1,11 @@
 package loader
 
 import (
-	"github.com/rytsh/liz/loader/consul"
-	"github.com/rytsh/liz/loader/file"
-	"github.com/rytsh/liz/loader/vault"
-	"github.com/rytsh/liz/utils/mapx"
-	"github.com/rytsh/liz/utils/templatex"
+	"github.com/rytsh/liz/consul"
+	"github.com/rytsh/liz/file"
+	"github.com/rytsh/liz/mapx"
+	"github.com/rytsh/liz/templatex"
+	"github.com/rytsh/liz/vault"
 )
 
 type Data struct {

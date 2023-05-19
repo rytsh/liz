@@ -2,7 +2,7 @@ package funcs
 
 import (
 	"github.com/rytsh/liz/fstore/generic"
-	"github.com/rytsh/liz/utils/templatex"
+	"github.com/rytsh/liz/templatex"
 )
 
 func init() {
