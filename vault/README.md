@@ -3,7 +3,7 @@
 Vault loader, read/write key-value pairs from vault.
 
 ```sh
-go get github.com/rytsh/liz/loader/vault
+go get github.com/rytsh/liz/vault
 ```
 
 ## Usage

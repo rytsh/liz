@@ -3,7 +3,7 @@
 Liz is a bunch of tools to read/write/check configuration for Go.  
 It's designed to be simple and easy to use.
 
-## Avaliable Tools
+## Avaliable Packages
 
 | Type                               | Description                    |
 | ---------------------------------- | ------------------------------ |
@@ -16,7 +16,7 @@ It's designed to be simple and easy to use.
 | [fstore](./fstore/README.md)       | github.com/rytsh/liz/fstore    |
 | [shutdown](./shutdown/README.md)   | github.com/rytsh/liz/shutdown  |
 
-## Other Repositories
+## Other Packages
 
 | Type                                                                   | Description                              |
 | ---------------------------------------------------------------------- | ---------------------------------------- |

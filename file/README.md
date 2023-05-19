@@ -3,5 +3,5 @@
 Load and save file with TOML, JSON, YAML codecs.
 
 ```sh
-go get github.com/rytsh/liz/loader/file
+go get github.com/rytsh/liz/file
 ```

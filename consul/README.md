@@ -3,7 +3,7 @@
 Consul loader have dynamic read and read/write/delete key-value pairs from consul.
 
 ```sh
-go get github.com/rytsh/liz/loader/consul
+go get github.com/rytsh/liz/consul
 ```
 
 ## Usage
