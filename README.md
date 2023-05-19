@@ -15,3 +15,11 @@ It's designed to be simple and easy to use.
 | [templateX](./templatex/README.md) | github.com/rytsh/liz/templatex |
 | [fstore](./fstore/README.md)       | github.com/rytsh/liz/fstore    |
 | [shutdown](./shutdown/README.md)   | github.com/rytsh/liz/shutdown  |
+
+## Other Repositories
+
+| Type                                                                   | Description                              |
+| ---------------------------------------------------------------------- | ---------------------------------------- |
+| [httpx](https://github.com/worldline-go/utility/tree/main/httpx)       | github.com/worldline-go/utility/httpx    |
+| [contextx](https://github.com/worldline-go/utility/tree/main/contextx) | github.com/worldline-go/utility/contextx |
+| [swagger](https://github.com/worldline-go/utility/tree/main/swagger)   | github.com/worldline-go/utility/swagger  |
