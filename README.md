@@ -5,14 +5,13 @@ It's designed to be simple and easy to use.
 
 ## Avaliable Tools
 
-| Type                                     | Description                          |
-| ---------------------------------------- | ------------------------------------ |
-| [consul](./loader/consul/README.md)      | github.com/rytsh/liz/loader/consul   |
-| [vault](./loader/vault/README.md)        | github.com/rytsh/liz/loader/vault    |
-| [httpx](./loader/httpx/README.md)        | github.com/rytsh/liz/loader/httpx    |
-| [file](./loader/file/README.md)          | github.com/rytsh/liz/loader/file     |
-| [mapX](./utils/mapx/README.md)           | github.com/rytsh/liz/utils/mapx      |
-| [ptr](./utils/ptr/README.md)             | github.com/rytsh/liz/utils/ptr       |
-| [templateX](./utils/templatex/README.md) | github.com/rytsh/liz/utils/templatex |
-| [fstore](./utils/fstore/README.md)       | github.com/rytsh/liz/utils/fstore    |
-| [shutdown](./utils/fstore/README.md)     | github.com/rytsh/liz/utils/fstore    |
+| Type                                | Description                    |
+| ----------------------------------- | ------------------------------ |
+| [consul](./consul/README.md) | github.com/rytsh/liz/consul    |
+| [vault](./vault/README.md)   | github.com/rytsh/liz/vault     |
+| [file](./file/README.md)     | github.com/rytsh/liz/file      |
+| [mapX](./mapx/README.md)            | github.com/rytsh/liz/mapx      |
+| [ptr](./ptr/README.md)              | github.com/rytsh/liz/ptr       |
+| [templateX](./templatex/README.md)  | github.com/rytsh/liz/templatex |
+| [fstore](./fstore/README.md)        | github.com/rytsh/liz/fstore    |
+| [shutdown](./shutdown/README.md)    | github.com/rytsh/liz/shutdown  |
