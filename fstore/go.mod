@@ -11,7 +11,7 @@ require (
 	github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51
 	github.com/rs/zerolog v1.29.0
 	github.com/rytsh/call v0.2.1
-	github.com/rytsh/liz/loader/file v0.2.1
+	github.com/rytsh/liz/file v0.1.0
 	github.com/rytsh/liz/shutdown v0.1.0
 	github.com/rytsh/liz/templatex v0.1.0
 	github.com/spf13/afero v1.9.4

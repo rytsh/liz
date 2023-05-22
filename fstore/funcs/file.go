@@ -1,8 +1,8 @@
 package funcs
 
 import (
+	"github.com/rytsh/liz/file"
 	"github.com/rytsh/liz/fstore/generic"
-	"github.com/rytsh/liz/loader/file"
 )
 
 func init() {
