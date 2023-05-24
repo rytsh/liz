@@ -148,19 +148,25 @@ func (a *API) LoadContent(v []byte, dst interface{}, codec Codec) error {
 	return nil
 }
 
+// LoadWithReturn loads the file with the specified codec and returns the result.
+func (a *API) LoadWithReturn(path string, codec Codec) (any, error) {
+	var dst any
+	codec, ok := a.selectCodec(path, codec)
+	if ok {
+		dst = map[string]any{}
+	} else {
+		dst = []byte{}
+	}
+
+	err := a.LoadWithCodec(path, &dst, codec)
+	return dst, err
+}
+
 // LoadWithCodec loads the file with the specified codec.
 //
 // If the codec is nil, the codec is determined by the file extension.
 func (a *API) LoadWithCodec(path string, dst interface{}, codec Codec) error {
-	if codec == nil {
-		ext := filepath.Ext(path)
-
-		var ok bool
-		codec, ok = a.Codec[ext]
-		if !ok {
-			codec = a.Codec["RAW"]
-		}
-	}
+	codec, _ = a.selectCodec(path, codec)
 
 	// open file
 	f, err := a.openFileRead(path)
@@ -175,6 +181,20 @@ func (a *API) LoadWithCodec(path string, dst interface{}, codec Codec) error {
 	}
 
 	return nil
+}
+
+func (a *API) selectCodec(path string, codec Codec) (Codec, bool) {
+	var ok = true
+	if codec == nil {
+		ext := filepath.Ext(path)
+
+		codec, ok = a.Codec[ext]
+		if !ok {
+			codec = a.Codec["RAW"]
+		}
+	}
+
+	return codec, ok
 }
 
 func (a *API) SetWithCodec(path string, data any, opts ...Option) error {

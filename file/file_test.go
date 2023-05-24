@@ -335,3 +335,56 @@ Laborum ex eiusmod velit fugiat eu elit ea sunt Lorem est.
 		})
 	}
 }
+
+func TestAPI_LoadWithReturn(t *testing.T) {
+	type args struct {
+		path  string
+		codec Codec
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    any
+		wantErr bool
+	}{
+		{
+			name: "json load",
+			args: args{
+				path:  "testdata/test.json",
+				codec: nil,
+			},
+			wantErr: false,
+			want: map[string]interface{}{
+				"foo": "bar",
+				"bar": map[string]interface{}{
+					"foo": float64(1234),
+				},
+			},
+		},
+		{
+			name: "raw load",
+			args: args{
+				path:  "testdata/test.txt",
+				codec: nil,
+			},
+			wantErr: false,
+			want: []byte(`Nisi eu cupidatat dolore sint.
+Laborum ex eiusmod velit fugiat eu elit ea sunt Lorem est.
+`),
+		},
+	}
+	a := New()
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := a.LoadWithReturn(tt.args.path, tt.args.codec)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("API.LoadWithReturn() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("API.LoadWithReturn() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
