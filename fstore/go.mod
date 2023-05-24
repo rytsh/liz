@@ -8,6 +8,7 @@ require (
 	github.com/cli/safeexec v1.0.1
 	github.com/dustin/go-humanize v1.0.1
 	github.com/gomarkdown/markdown v0.0.0-20221013030248-663e2500819c
+	github.com/jaswdr/faker v1.17.0
 	github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51
 	github.com/rs/zerolog v1.29.0
 	github.com/rytsh/call v0.2.1
