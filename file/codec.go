@@ -1,6 +1,7 @@
 package file
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -90,6 +91,55 @@ func (TOML) Decode(r io.Reader, v interface{}) error {
 
 	if _, err := decode.Decode(v); err != nil {
 		return fmt.Errorf("toml decode: %w", err)
+	}
+
+	return nil
+}
+
+type RAW struct{}
+
+var _ Codec = RAW{}
+
+func (RAW) Encode(w io.Writer, v any) error {
+	vByte, ok := v.([]byte)
+	if !ok {
+		return fmt.Errorf("raw decode: expected []byte, got %T", v)
+	}
+
+	_, err := w.Write(vByte)
+	return err
+}
+
+func (RAW) Decode(r io.Reader, v any) error {
+	var vByte *[]byte
+
+	switch vTyped := v.(type) {
+	case *[]byte:
+		vByte = vTyped
+	case *interface{}:
+		vByteInf, ok := (*vTyped).([]byte)
+		if !ok {
+			return fmt.Errorf("raw decode: expected *[]byte, got %T", *vTyped)
+		}
+
+		vByte = &vByteInf
+	default:
+		return fmt.Errorf("raw decode: expected *[]byte, got %T", v)
+	}
+
+	buffer := bytes.NewBuffer(*vByte)
+	// read and write to vByte
+	if _, err := buffer.ReadFrom(r); err != nil {
+		return err
+	}
+
+	// update v
+	if _, ok := v.(*interface{}); ok {
+		*v.(*interface{}) = buffer.Bytes()
+	}
+
+	if _, ok := v.(*[]byte); ok {
+		*v.(*[]byte) = buffer.Bytes()
 	}
 
 	return nil

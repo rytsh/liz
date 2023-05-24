@@ -23,6 +23,7 @@ func New() *API {
 	json := JSON{Indent: "  "}
 	yaml := YAML{}
 	toml := TOML{}
+	raw := RAW{}
 
 	return &API{
 		Codec: map[string]Codec{
@@ -33,6 +34,7 @@ func New() *API {
 			".yml":  yaml,
 			"TOML":  toml,
 			".toml": toml,
+			"RAW":   raw,
 		},
 	}
 }
@@ -138,6 +140,35 @@ func (a *API) LoadContent(v []byte, dst interface{}, codec Codec) error {
 	}
 
 	f := bytes.NewReader(v)
+
+	if err := codec.Decode(f, dst); err != nil {
+		return fmt.Errorf("failed to unmarshal: %w", err)
+	}
+
+	return nil
+}
+
+// LoadWithCodec loads the file with the specified codec.
+//
+// If the codec is nil, the codec is determined by the file extension.
+func (a *API) LoadWithCodec(path string, dst interface{}, codec Codec) error {
+	if codec == nil {
+		ext := filepath.Ext(path)
+
+		var ok bool
+		codec, ok = a.Codec[ext]
+		if !ok {
+			codec = a.Codec["RAW"]
+		}
+	}
+
+	// open file
+	f, err := a.openFileRead(path)
+	if err != nil {
+		return err
+	}
+
+	defer f.Close()
 
 	if err := codec.Decode(f, dst); err != nil {
 		return fmt.Errorf("failed to unmarshal: %w", err)

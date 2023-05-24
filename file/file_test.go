@@ -248,3 +248,90 @@ func TestAPI_Set(t *testing.T) {
 		})
 	}
 }
+
+func TestAPI_LoadWithCodec(t *testing.T) {
+	type args struct {
+		path  string
+		dst   interface{}
+		codec Codec
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+		want    interface{}
+	}{
+		{
+			name: "json load",
+			args: args{
+				path:  "testdata/test.json",
+				dst:   map[string]interface{}{},
+				codec: nil,
+			},
+			wantErr: false,
+			want: map[string]interface{}{
+				"foo": "bar",
+				"bar": map[string]interface{}{
+					"foo": float64(1234),
+				},
+			},
+		},
+		{
+			name: "yaml load",
+			args: args{
+				path:  "testdata/test.yml",
+				dst:   map[string]interface{}{},
+				codec: nil,
+			},
+			wantErr: false,
+			want: map[string]interface{}{
+				"foo": "bar",
+				"bar": map[string]interface{}{
+					"foo": 1234,
+				},
+			},
+		},
+		{
+			name: "toml load",
+			args: args{
+				path:  "testdata/test.toml",
+				dst:   map[string]interface{}{},
+				codec: nil,
+			},
+			wantErr: false,
+			want: map[string]interface{}{
+				"foo": "bar",
+				"bar": map[string]interface{}{
+					"foo": int64(1234),
+				},
+			},
+		},
+		{
+			name: "raw load",
+			args: args{
+				path:  "testdata/test.txt",
+				dst:   []byte{},
+				codec: nil,
+			},
+			wantErr: false,
+			want: []byte(`Nisi eu cupidatat dolore sint.
+Laborum ex eiusmod velit fugiat eu elit ea sunt Lorem est.
+`),
+		},
+	}
+
+	a := New()
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := a.LoadWithCodec(tt.args.path, &tt.args.dst, tt.args.codec); (err != nil) != tt.wantErr {
+				t.Errorf("API.LoadWithCodec() error = %v, wantErr %v", err, tt.wantErr)
+
+				return
+			}
+
+			if !reflect.DeepEqual(tt.args.dst, tt.want) {
+				t.Errorf("API.LoadWithCodec() = %#v, want %#v", tt.args.dst, tt.want)
+			}
+		})
+	}
+}
