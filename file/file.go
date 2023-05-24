@@ -39,6 +39,22 @@ func New() *API {
 	}
 }
 
+// Open opens a file with options.
+func (a *API) OpenFile(path string, opts ...Option) (*os.File, error) {
+	options, err := a.readOptions(opts)
+	if err != nil {
+		return nil, err
+	}
+
+	// open file
+	f, err := a.openFileWrite(path, options)
+	if err != nil {
+		return nil, err
+	}
+
+	return f, nil
+}
+
 func (a *API) openFileRead(path string) (*os.File, error) {
 	// open file
 	f, err := os.Open(path)
@@ -198,11 +214,9 @@ func (a *API) selectCodec(path string, codec Codec) (Codec, bool) {
 }
 
 func (a *API) SetWithCodec(path string, data any, opts ...Option) error {
-	var options options
-	for _, opt := range opts {
-		if err := opt(&options); err != nil {
-			return err
-		}
+	options, err := a.readOptions(opts)
+	if err != nil {
+		return err
 	}
 
 	// open file
@@ -226,11 +240,9 @@ func (a *API) SetWithCodec(path string, data any, opts ...Option) error {
 }
 
 func (a *API) SetRaw(path string, data []byte, opts ...Option) error {
-	var options options
-	for _, opt := range opts {
-		if err := opt(&options); err != nil {
-			return err
-		}
+	options, err := a.readOptions(opts)
+	if err != nil {
+		return err
 	}
 
 	// open file
@@ -247,4 +259,15 @@ func (a *API) SetRaw(path string, data []byte, opts ...Option) error {
 	}
 
 	return nil
+}
+
+func (a *API) readOptions(opts []Option) (options, error) {
+	var options options
+	for _, opt := range opts {
+		if err := opt(&options); err != nil {
+			return options, err
+		}
+	}
+
+	return options, nil
 }
