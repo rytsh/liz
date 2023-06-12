@@ -261,6 +261,28 @@ func (a *API) SetRaw(path string, data []byte, opts ...Option) error {
 	return nil
 }
 
+func (a *API) SetRawWithReader(path string, data io.Reader, opts ...Option) error {
+	options, err := a.readOptions(opts)
+	if err != nil {
+		return err
+	}
+
+	// open file
+	f, err := a.openFileWrite(path, options)
+	if err != nil {
+		return err
+	}
+
+	defer f.Close()
+
+	// write file
+	if _, err := io.Copy(f, data); err != nil {
+		return fmt.Errorf("failed to write file %s: %w", path, err)
+	}
+
+	return nil
+}
+
 func (a *API) readOptions(opts []Option) (options, error) {
 	var options options
 	for _, opt := range opts {
